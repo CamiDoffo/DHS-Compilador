@@ -1,4 +1,4 @@
-# Generated from c:/Users/Usuario/OneDrive/Documentos/Facultad/iua/tercero/DHS/dhsprueba/src/main/python/compiladores.g4 by ANTLR 4.13.1
+# Generated from c:/Users/Usuario/OneDrive/Documentos/Facultad/iua/tercero/DHS/compilador/src/main/python/compiladores.g4 by ANTLR 4.13.1
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO

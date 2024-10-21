@@ -1,4 +1,4 @@
-# Generated from c:/Users/Usuario/OneDrive/Documentos/Facultad/iua/tercero/DHS/dhsprueba/src/main/python/compiladores.g4 by ANTLR 4.13.1
+# Generated from c:/Users/Usuario/OneDrive/Documentos/Facultad/iua/tercero/DHS/compilador/src/main/python/compiladores.g4 by ANTLR 4.13.1
 from antlr4 import *
 if "." in __name__:
     from .compiladoresParser import compiladoresParser

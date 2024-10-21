@@ -1,6 +1,7 @@
 from antlr4 import ErrorNode, TerminalNode
 from  compiladoresListener import compiladoresListener
 from compiladoresParser import compiladoresParser
+# mientras se va creando el arbol, avanza
 
 class Escucha (compiladoresListener) :
     numTokens = 0 #tokens son las hojas
