@@ -34,13 +34,28 @@ class compiladoresVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by compiladoresParser#inic.
+    def visitInic(self, ctx:compiladoresParser.InicContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by compiladoresParser#declaracion.
     def visitDeclaracion(self, ctx:compiladoresParser.DeclaracionContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by compiladoresParser#asignacionInt.
-    def visitAsignacionInt(self, ctx:compiladoresParser.AsignacionIntContext):
+    # Visit a parse tree produced by compiladoresParser#tipoDatos.
+    def visitTipoDatos(self, ctx:compiladoresParser.TipoDatosContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compiladoresParser#declaracionPYC.
+    def visitDeclaracionPYC(self, ctx:compiladoresParser.DeclaracionPYCContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compiladoresParser#asignacionNum.
+    def visitAsignacionNum(self, ctx:compiladoresParser.AsignacionNumContext):
         return self.visitChildren(ctx)
 
 
@@ -146,6 +161,16 @@ class compiladoresVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by compiladoresParser#iif.
     def visitIif(self, ctx:compiladoresParser.IifContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compiladoresParser#else.
+    def visitElse(self, ctx:compiladoresParser.ElseContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compiladoresParser#eelse.
+    def visitEelse(self, ctx:compiladoresParser.EelseContext):
         return self.visitChildren(ctx)
 
 

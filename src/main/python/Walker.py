@@ -11,8 +11,8 @@ class Walker (compiladoresVisitor):
     def visitBloque(self, ctx: compiladoresParser):
         print("--- Nuevo contexto ---")
         print(ctx.getText())
-        # return super().visitBloque(ctx)
-        return super().visitDeclaracion(ctx.getChild(1)) # omite imprimir las llaves de la anidacion
+        return super().visitBloque(ctx)
+        #return super().visitDeclaracion(ctx.getChild(1)) # omite imprimir las llaves de la anidacion
     def visitTerminal(self, node):
         print("==> Token " + node.getText())
         return super().visitTerminal(node)
@@ -22,3 +22,12 @@ class Walker (compiladoresVisitor):
               ctx.getChild(1). getText())
         #return super().visitDeclaracion(ctx)
         return None
+    def visitIwhile(self, ctx):
+        print("---- WHILE ----")
+        return super().visitIwhile(ctx)
+    def visitIfor(self, ctx):
+        print("---- FOR ----")
+        return super().visitIfor(ctx)
+    def visitErrorNode(self, node):
+        print("---- ERROR ----")
+        return super().visitErrorNode(node)

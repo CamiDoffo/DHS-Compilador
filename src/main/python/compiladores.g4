@@ -30,9 +30,18 @@ NUMERO : DIGITO+ ;
 
 INT: 'int';
 BOOL: 'bool';
+FLOAT: 'float';
+DOUBLE: 'double';
+//float: (NUMERO).(NUMERO); //NOSE LOCO
+
 WHILE: 'while';
 FOR: 'for';
 IF: 'if';
+ELSE: 'else';
+
+BOOLEANS: TRUE
+        | FALSE
+        ;
 
 ID: (LETRA | '_')(LETRA | DIGITO | '_')*; //expresion regular
 
@@ -58,27 +67,35 @@ programa: instrucciones EOF;
 instrucciones : instruccion instrucciones
               |
               ;
-instruccion : declaracion
+instruccion : declaracionPYC
             | iwhile
             | ifor
             | iif
             | bloque
             | inst
             ;
+inic: tipoDatos asignacion;
+declaracion : tipoDatos ID;
+tipoDatos: BOOL
+          | INT
+          | FLOAT
+          | DOUBLE
+          ; 
+declaracionPYC: declaracion PYC;
+asignacionNum : ID ASIG exp
+              | ID ASIG NUMERO
+              ;
 
-declaracion : INT ID PYC
-            | BOOL ID PYC
+asignacion : ID ASIG opal
+            | ID ASIG NUMERO
+            | ID ASIG BOOLEANS
             ;
-
-asignacionInt : ID ASIG exp;
-
-asignacion : ID ASIG opal;
 
 inst : asignacion PYC; //asignacion completa
 
 opal : exp
      | opbool
-     ; //COMPLETAR, exp es solo una expresion aritmetica (TODO operaciones booleanas?)
+     ;
 
 exp: term expPrima ;
 
@@ -95,7 +112,7 @@ t    : MULT factor t
     ;
 factor: NUMERO
       | ID
-      | PA exp PC
+      | PA exp PC //sin parentesis no le gusta TODO preguntar profe
       ;
 
 iwhile : WHILE PA ID PC instruccion;
@@ -121,10 +138,14 @@ opbool : factorBool bools ;
 opcomp : ID comps factor;
 
 ifor : FOR PA init PYC cond PYC iter PC bloque;
-init : asignacionInt;
+init : asignacionNum;
 cond : opcomp cond// si quiero que la condicion tenga una operacion algebraica DEBE ESTAR ENTRE PARENTESIS
       | opbool cond
       |
       ;
 iter: asignacion; //i = i+1;
 iif: IF PA cond PC bloque;
+else: ELSE eelse;
+eelse: iif
+     | bloque
+     ; 

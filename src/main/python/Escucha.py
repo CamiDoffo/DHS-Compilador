@@ -38,7 +38,16 @@ class Escucha (compiladoresListener) :
         
     def visitErrorNode(self, node: ErrorNode):
         print(" ---> ERROR")
+        print(node.getText())
         
     def enterEveryRule(self, ctx):
         self.numNodos += 1
         
+    def enterIfor(self, ctx):
+        print("Enter FOR")
+        print("\tCantidad de hijos: " + str(ctx.getChildCount()))
+        print("\tTokens: " + ctx.getText())
+    def exitIfor(self, ctx):
+        print("FIN del FOR")
+        print("\tCantidad de hijos: " + str(ctx.getChildCount()))
+        print("\tTokens: " + ctx.getText())
