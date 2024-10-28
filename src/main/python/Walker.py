@@ -1,11 +1,12 @@
 from compiladoresVisitor import compiladoresVisitor
 from compiladoresParser import compiladoresParser
+# para crear codigo intermedio
 
 class Walker (compiladoresVisitor):
     def visitPrograma(self, ctx: compiladoresParser):
         print("=-"*20) # hace esto 20 veces
         print("--- Comienza a caminar ---")
-        tmp = super().visitPrograma(ctx) # para no visitar nada pongo tmp = None
+        tmp = super().visitPrograma(ctx) # (para enganchar el recorrido normal) para no visitar nada pongo tmp = None
         print("--- Fin de recorrido ---")
         return tmp
     def visitBloque(self, ctx: compiladoresParser):

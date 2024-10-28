@@ -8,6 +8,8 @@ PC : ')';
 PYC : ';';
 LLA : '{';
 LLC : '}';
+COMA: ',';
+PUNTO: '.';
 
 ASIG : '=';
 IGUAL : '==';
@@ -32,7 +34,9 @@ INT: 'int';
 BOOL: 'bool';
 FLOAT: 'float';
 DOUBLE: 'double';
-//float: (NUMERO).(NUMERO); //NOSE LOCO
+VOID: 'void';
+//float: (NUMERO)PUNTO(NUMERO); //NOSE
+//double: (NUMERO)(NUMERO);
 
 WHILE: 'while';
 FOR: 'for';
@@ -99,8 +103,8 @@ opal : exp
 
 exp: term expPrima ;
 
-expPrima: SUMA term expPrima
-        | RESTA term expPrima
+expPrima: SUMA exp
+        | RESTA exp
         | //Esto es una regla vacia, para cuando no hay mas terminos para operar
         ;
 
@@ -112,7 +116,6 @@ t    : MULT factor t
     ;
 factor: NUMERO
       | ID
-      | PA exp PC //sin parentesis no le gusta TODO preguntar profe
       ;
 
 iwhile : WHILE PA ID PC instruccion;
@@ -143,9 +146,24 @@ cond : opcomp cond// si quiero que la condicion tenga una operacion algebraica D
       | opbool cond
       |
       ;
-iter: asignacion; //i = i+1;
+iter: ID ASIG ID iteracion; //i = i+1;
+iteracion: SUMA NUMERO
+          | RESTA NUMERO
+          | MULT NUMERO
+          | DIV NUMERO
+          ;
 iif: IF PA cond PC bloque;
 else: ELSE eelse;
 eelse: iif
      | bloque
      ; 
+
+funciones: tipoDatos ID PA argumentos PC
+          | VOID ID PA argumentos PC
+          ;
+
+argumentos: argumento arg;
+arg : COMA argumentos
+    |
+    ;
+argumento: tipoDatos ID;

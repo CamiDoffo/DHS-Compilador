@@ -278,6 +278,15 @@ class compiladoresListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by compiladoresParser#iteracion.
+    def enterIteracion(self, ctx:compiladoresParser.IteracionContext):
+        pass
+
+    # Exit a parse tree produced by compiladoresParser#iteracion.
+    def exitIteracion(self, ctx:compiladoresParser.IteracionContext):
+        pass
+
+
     # Enter a parse tree produced by compiladoresParser#iif.
     def enterIif(self, ctx:compiladoresParser.IifContext):
         pass
@@ -302,6 +311,42 @@ class compiladoresListener(ParseTreeListener):
 
     # Exit a parse tree produced by compiladoresParser#eelse.
     def exitEelse(self, ctx:compiladoresParser.EelseContext):
+        pass
+
+
+    # Enter a parse tree produced by compiladoresParser#funciones.
+    def enterFunciones(self, ctx:compiladoresParser.FuncionesContext):
+        pass
+
+    # Exit a parse tree produced by compiladoresParser#funciones.
+    def exitFunciones(self, ctx:compiladoresParser.FuncionesContext):
+        pass
+
+
+    # Enter a parse tree produced by compiladoresParser#argumentos.
+    def enterArgumentos(self, ctx:compiladoresParser.ArgumentosContext):
+        pass
+
+    # Exit a parse tree produced by compiladoresParser#argumentos.
+    def exitArgumentos(self, ctx:compiladoresParser.ArgumentosContext):
+        pass
+
+
+    # Enter a parse tree produced by compiladoresParser#arg.
+    def enterArg(self, ctx:compiladoresParser.ArgContext):
+        pass
+
+    # Exit a parse tree produced by compiladoresParser#arg.
+    def exitArg(self, ctx:compiladoresParser.ArgContext):
+        pass
+
+
+    # Enter a parse tree produced by compiladoresParser#argumento.
+    def enterArgumento(self, ctx:compiladoresParser.ArgumentoContext):
+        pass
+
+    # Exit a parse tree produced by compiladoresParser#argumento.
+    def exitArgumento(self, ctx:compiladoresParser.ArgumentoContext):
         pass
 
 

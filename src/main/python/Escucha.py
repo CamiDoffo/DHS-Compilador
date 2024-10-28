@@ -2,6 +2,7 @@ from antlr4 import ErrorNode, TerminalNode
 from  compiladoresListener import compiladoresListener
 from compiladoresParser import compiladoresParser
 # mientras se va creando el arbol, avanza
+# para analisis semantico
 
 class Escucha (compiladoresListener) :
     numTokens = 0 #tokens son las hojas
@@ -28,6 +29,7 @@ class Escucha (compiladoresListener) :
         
     def enterDeclaracion(self, ctx: compiladoresParser.DeclaracionContext):
         print(" ### Declaracion")
+        # aca deberia chequear que cuando se declare una variable ya no este en la tabla de simbolos
         
     def exitDeclaracion(self, ctx: compiladoresParser.DeclaracionContext):
         print("Nombre variable: " + ctx.getChild(1).getText())

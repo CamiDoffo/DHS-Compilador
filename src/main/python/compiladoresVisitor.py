@@ -159,6 +159,11 @@ class compiladoresVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by compiladoresParser#iteracion.
+    def visitIteracion(self, ctx:compiladoresParser.IteracionContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by compiladoresParser#iif.
     def visitIif(self, ctx:compiladoresParser.IifContext):
         return self.visitChildren(ctx)
@@ -171,6 +176,26 @@ class compiladoresVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by compiladoresParser#eelse.
     def visitEelse(self, ctx:compiladoresParser.EelseContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compiladoresParser#funciones.
+    def visitFunciones(self, ctx:compiladoresParser.FuncionesContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compiladoresParser#argumentos.
+    def visitArgumentos(self, ctx:compiladoresParser.ArgumentosContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compiladoresParser#arg.
+    def visitArg(self, ctx:compiladoresParser.ArgContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compiladoresParser#argumento.
+    def visitArgumento(self, ctx:compiladoresParser.ArgumentoContext):
         return self.visitChildren(ctx)
 
 

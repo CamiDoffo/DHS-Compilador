@@ -1,5 +1,6 @@
 from enum import Enum
 from abc import abstractclass, abstractmethod
+# usar esto usando singleton (?
 
 class ID(abstractclass):
     @abstractmethod
