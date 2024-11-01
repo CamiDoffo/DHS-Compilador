@@ -35,8 +35,6 @@ BOOL: 'bool';
 FLOAT: 'float';
 DOUBLE: 'double';
 VOID: 'void';
-//float: (NUMERO)PUNTO(NUMERO); //NOSE
-//double: (NUMERO)(NUMERO);
 
 WHILE: 'while';
 FOR: 'for';
@@ -51,13 +49,6 @@ ID: (LETRA | '_')(LETRA | DIGITO | '_')*; //expresion regular
 
 WS: [ \t\n\r] -> skip;
 OTRO : . ;//por si no entra en ninguna regla; si no esta esto lo toma como un error lexico
-
-
-// s : ID     {print("ID ->" + $ID.text + "<--") }         s
-//   | NUMERO {print("NUMERO ->" + $NUMERO.text + "<--") } s
-//   | OTRO   {print("Otro ->" + $OTRO.text + "<--") }     s
-//   | EOF
-//   ;
 
 // analisis sintactico:
 si : s EOF; //veo desde la raiz; simbolo inicial

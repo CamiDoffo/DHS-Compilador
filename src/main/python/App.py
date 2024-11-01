@@ -17,8 +17,9 @@ def main(argv):
     parser.addParseListener(escucha)
     tree = parser.programa() #con el arbol vamos a crear el codigo intermedio
     #print(tree.toStringTree(recog=parser))
-    caminante = Walker()
-    caminante.visitPrograma(tree)
+    #caminante = Walker()
+    #caminante.visitPrograma(tree)
+    
 
 if __name__ == '__main__':
     main(sys.argv)
