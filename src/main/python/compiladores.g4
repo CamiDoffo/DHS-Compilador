@@ -68,6 +68,7 @@ instruccion : declaracionPYC
             | iif
             | bloque
             | inst
+            | funciones
             ;
 inic: tipoDatos asignacion;
 declaracion : tipoDatos ID;
@@ -81,16 +82,11 @@ asignacionNum : ID ASIG exp
               | ID ASIG NUMERO
               ;
 
-asignacion : ID ASIG opal
-            | ID ASIG NUMERO
-            | ID ASIG BOOLEANS
+asignacion : asignacionNum //chequear si no podria poner como opcion asignacionNum
+            | asignacionBool
             ;
 
 inst : asignacion PYC; //asignacion completa
-
-opal : exp
-     | opbool
-     ;
 
 exp: term expPrima ;
 

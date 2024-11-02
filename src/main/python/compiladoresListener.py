@@ -116,15 +116,6 @@ class compiladoresListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by compiladoresParser#opal.
-    def enterOpal(self, ctx:compiladoresParser.OpalContext):
-        pass
-
-    # Exit a parse tree produced by compiladoresParser#opal.
-    def exitOpal(self, ctx:compiladoresParser.OpalContext):
-        pass
-
-
     # Enter a parse tree produced by compiladoresParser#exp.
     def enterExp(self, ctx:compiladoresParser.ExpContext):
         pass

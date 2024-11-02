@@ -69,11 +69,6 @@ class compiladoresVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by compiladoresParser#opal.
-    def visitOpal(self, ctx:compiladoresParser.OpalContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by compiladoresParser#exp.
     def visitExp(self, ctx:compiladoresParser.ExpContext):
         return self.visitChildren(ctx)
