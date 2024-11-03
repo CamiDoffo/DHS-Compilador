@@ -102,6 +102,28 @@ class Escucha (compiladoresListener) :
                 busquedaGlobal.set_usado()
             else:
                 busquedaGlobal.set_inicializado()
+    
+    def exitInic(self, ctx):
+        #TODO CHEQUEAR (PURO COPYPASTE)
+        nombreVariable= ctx.getChild(1).getText()
+        busquedaLocal = self.tabla.buscar_local(nombreVariable)
+        busquedaGlobal = self.tabla.buscar_global(nombreVariable)
+        tipoDeDato = ctx.getChild(0).getText()
+        variable = ID(nombreVariable, tipoDeDato)
+        variable.set_inicializado()
+        #buscamos si la variable fue declarada globalmente
+        if busquedaLocal is None or busquedaGlobal is None :
+            print("Se inicializo TU VIEJA SABE DONDE la variable '" + nombreVariable +"'")
+            self.tabla.add_identificador(variable)
+            print("Nombre variable: " + ctx.getChild(1).getText())
+        
+        
+        
+        
+       
+        
+            
+            
             
         
     def visitTerminal(self, node: TerminalNode):

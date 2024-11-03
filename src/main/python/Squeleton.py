@@ -11,8 +11,8 @@ class ID:
         self.inicializado = True
     def set_usado(self):
         self.usado = True
-    def __repr__(self):
-        return "ID: "+self.tipoDato+" "+self.nombre+": Inicializado? "+self.inicializado+", Usado? "+self.usado
+    def __str__(self):
+        return "ID: "+self.tipoDato+" "+self.nombre+": Inicializado? "+str(self.inicializado)+", Usado? "+str(self.usado)
     
 class Contexto:
     """
@@ -25,12 +25,13 @@ class Contexto:
 
     def agregarID(self, id):
         self.ids[id.nombre] = id 
-    def __repr__(self):
+    def __str__(self):
         # Crear una representación en cadena para todos los IDs en el contexto
-        for id in self.ids:
-            ids_repr += id.__repr__ + "\n"
+        ids_repr = ""
+        for id in self.ids.values():
+            ids_repr += id.__str__() + "\n"
         print("caca2")
-        return "Contexto: "+ ids_repr
+        return "Contexto: \n"+ ids_repr
 
 class TablaSimbolos:
     """
@@ -62,7 +63,7 @@ class TablaSimbolos:
         Agrega un nuevo contexto a la tabla de simbolos
         """
         print("Agregando contexto ......")
-        #print(self.__repr__())
+        print(self.__str__())
         #print("Instancia: "+ self.get_instancia().getText())
         self.contextos.append(contexto)
         
@@ -105,6 +106,8 @@ class TablaSimbolos:
                 print("El identificador "+nombre+" ya existe en el contexto global!")
                 return ctx.ids[nombre]
         return None
-    def __repr__(self):
-        #print("Instancia: "+ self.instancia.getText())
-        return "Tabla de Simbolos: " + self.contextos.__repr__()
+    def __str__(self):
+        ctx_repr = ""
+        for ctx in self.contextos:
+            ctx_repr += ctx.__str__() + "\n"
+        return "Tabla de Simbolos:\n" + ctx_repr

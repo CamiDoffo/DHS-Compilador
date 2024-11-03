@@ -1,5 +1,7 @@
+int caca2;
+double caca1=0 ;
 int caca;
-int caca;
+int caca3;
 for (x=0; x<10; x=x*1) {
     miVariable = 0;
 }
