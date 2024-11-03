@@ -1,4 +1,4 @@
-# Generated from c:/Users/Usuario/OneDrive/Documentos/Facultad/iua/tercero/DHS/compilador/src/main/python/compiladores.g4 by ANTLR 4.13.1
+# Generated from src/main/python/compiladores.g4 by ANTLR 4.13.2
 from antlr4 import *
 if "." in __name__:
     from .compiladoresParser import compiladoresParser
@@ -98,12 +98,39 @@ class compiladoresListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by compiladoresParser#asignacionPYC.
+    def enterAsignacionPYC(self, ctx:compiladoresParser.AsignacionPYCContext):
+        pass
+
+    # Exit a parse tree produced by compiladoresParser#asignacionPYC.
+    def exitAsignacionPYC(self, ctx:compiladoresParser.AsignacionPYCContext):
+        pass
+
+
     # Enter a parse tree produced by compiladoresParser#asignacion.
     def enterAsignacion(self, ctx:compiladoresParser.AsignacionContext):
         pass
 
     # Exit a parse tree produced by compiladoresParser#asignacion.
     def exitAsignacion(self, ctx:compiladoresParser.AsignacionContext):
+        pass
+
+
+    # Enter a parse tree produced by compiladoresParser#ifor.
+    def enterIfor(self, ctx:compiladoresParser.IforContext):
+        pass
+
+    # Exit a parse tree produced by compiladoresParser#ifor.
+    def exitIfor(self, ctx:compiladoresParser.IforContext):
+        pass
+
+
+    # Enter a parse tree produced by compiladoresParser#init.
+    def enterInit(self, ctx:compiladoresParser.InitContext):
+        pass
+
+    # Exit a parse tree produced by compiladoresParser#init.
+    def exitInit(self, ctx:compiladoresParser.InitContext):
         pass
 
 
@@ -221,24 +248,6 @@ class compiladoresListener(ParseTreeListener):
 
     # Exit a parse tree produced by compiladoresParser#opcomp.
     def exitOpcomp(self, ctx:compiladoresParser.OpcompContext):
-        pass
-
-
-    # Enter a parse tree produced by compiladoresParser#ifor.
-    def enterIfor(self, ctx:compiladoresParser.IforContext):
-        pass
-
-    # Exit a parse tree produced by compiladoresParser#ifor.
-    def exitIfor(self, ctx:compiladoresParser.IforContext):
-        pass
-
-
-    # Enter a parse tree produced by compiladoresParser#init.
-    def enterInit(self, ctx:compiladoresParser.InitContext):
-        pass
-
-    # Exit a parse tree produced by compiladoresParser#init.
-    def exitInit(self, ctx:compiladoresParser.InitContext):
         pass
 
 

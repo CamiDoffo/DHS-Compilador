@@ -4,7 +4,7 @@ fragment LETRA : [A-Za-z] ;
 fragment DIGITO : [0-9] ;
 
 PA : '('; //esto puede ser una expresion especifica
-PC : ')';
+PC : ')'; //esto puede ser una expresion especifica
 PYC : ';';
 LLA : '{';
 LLC : '}';
@@ -67,7 +67,7 @@ instruccion : declaracionPYC
             | ifor
             | iif
             | bloque
-            | asignacion
+            | asignacionPYC
             | funciones
             | inic
             ;
@@ -83,11 +83,15 @@ asignacionNum : ID ASIG exp
               | ID ASIG NUMERO
               ;
 
+asignacionPYC: asignacion PYC;
+
 asignacion : asignacionNum
             | asignacionBool
             ;
 
 
+ifor : FOR PA init PYC cond PYC iter PC bloque;
+init : asignacionNum;
 
 exp: term expPrima ;
 
@@ -100,7 +104,6 @@ term: factor t ;
 t    : MULT factor t
     | DIV factor t
     | MOD factor t
-    |
     ;
 factor: NUMERO
       | ID
@@ -128,8 +131,6 @@ asignacionBool : ID ASIG opbool;
 opbool : factorBool bools ;
 opcomp : ID comps factor;
 
-ifor : FOR PA init PYC cond PYC iter PC bloque;
-init : asignacionNum;
 cond : opcomp cond// si quiero que la condicion tenga una operacion algebraica DEBE ESTAR ENTRE PARENTESIS
       | opbool cond
       |

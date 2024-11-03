@@ -21,6 +21,7 @@ class Escucha (compiladoresListener) :
         print("Se encontraron")
         print("\tNodos: " + str(self.numNodos))
         print("\tTokens: " + str(self.numTokens))
+        print(self.tabla.__str__())
         self.tabla.del_Contexto()
     
     def enterIwhile(self, ctx:compiladoresParser.IwhileContext):
@@ -41,6 +42,10 @@ class Escucha (compiladoresListener) :
         # se solucionadoria con if anidado y llamando al buscar por separado en cada caso
         nombreVariable = ctx.getChild(1).getText()
         tipoDeDato = ctx.getChild(0).getText()
+                # Si el nombre de la variable contiene un '=', tomamos solo la parte anterior
+        if '=' in nombreVariable:
+            nombreVariable = nombreVariable.split('=')[0].strip()  # Tomamos solo el nombre sin espacios
+
         variable = ID(nombreVariable, tipoDeDato)
         
         #Las busquedas si devuelven None es porque encontraron algo
@@ -51,7 +56,7 @@ class Escucha (compiladoresListener) :
             print('"'+nombreVariable+'"'+" no fue declarada previamente")
             self.tabla.add_identificador(variable)
         
-        print("Nombre variable: " + ctx.getChild(1).getText())
+        print("Nombre variable: " + nombreVariable)
         
     def enterIfor(self, ctx: compiladoresParser.IforContext):
         print("Enter FOR")
@@ -90,42 +95,61 @@ class Escucha (compiladoresListener) :
         funcion = ID(ctx.getChild(1).getText(), ctx.getChild(0).getText())
         self.tabla.add_identificador(funcion)
         print("\tTokens: " + ctx.getText())        
-    
-    def exitAsignacion(self, ctx: compiladoresParser.AsignacionContext):#cambiar usado a true
-        nombreVariable= ctx.getChild(0).getText()
-        busquedaLocal = self.tabla.buscar_local(nombreVariable)
-        busquedaGlobal = self.tabla.buscar_global(nombreVariable)
-        #buscamos si la variable fue declarada globalmente
-        if busquedaLocal is not None or busquedaGlobal is not None :
-            print("Se inicializo/modifico TU VIEJA SABE DONDE la variable '" + nombreVariable +"'")
-            if busquedaGlobal.inicializado is True:
-                busquedaGlobal.set_usado()
-            else:
-                busquedaGlobal.set_inicializado()
-    
+        
+        
     def exitInic(self, ctx):
-        #TODO CHEQUEAR (PURO COPYPASTE)
-        nombreVariable= ctx.getChild(1).getText()
+        nombreVariable = ctx.getChild(1).getText()
+        # Si el nombre de la variable contiene un '=', extraemos solo el nombre
+        if '=' in nombreVariable:
+            nombreVariable = nombreVariable.split('=')[0].strip()
+
+        # Chequear si existe en el contexto actual
         busquedaLocal = self.tabla.buscar_local(nombreVariable)
         busquedaGlobal = self.tabla.buscar_global(nombreVariable)
         tipoDeDato = ctx.getChild(0).getText()
         variable = ID(nombreVariable, tipoDeDato)
         variable.set_inicializado()
-        #buscamos si la variable fue declarada globalmente
-        if busquedaLocal is None or busquedaGlobal is None :
+
+        # Si la variable no existe en ningún contexto, la agregamos
+        if busquedaLocal is None and busquedaGlobal is None:
             print("Se inicializo TU VIEJA SABE DONDE la variable '" + nombreVariable +"'")
+            print(f"Se inicializó la variable '{nombreVariable}' en el contexto actual.")
             self.tabla.add_identificador(variable)
-            print("Nombre variable: " + ctx.getChild(1).getText())
-        
-        
-        
-        
-       
-        
-            
-            
-            
-        
+        elif busquedaLocal is not None:
+            print("Se se inicializo TU VIEJA SABE DONDE la variable '" + nombreVariable +"'")
+            print(f"La variable '{nombreVariable}' ya está declarada en el contexto local.")
+        elif busquedaGlobal is not None:
+            print("Se se inicializo TU VIEJA SABE DONDE la variable '" + nombreVariable +"'")
+            print(f"La variable '{nombreVariable}' ya está declarada en el contexto global.")
+
+
+    def exitAsignacion(self, ctx):
+        nombreVariable = ctx.getChild(0).getText()
+        busquedaLocal = self.tabla.buscar_local(nombreVariable)
+        busquedaGlobal = self.tabla.buscar_global(nombreVariable)
+
+        # Si la variable se encuentra en el contexto local
+        if busquedaLocal is not None:
+            print(f"Se modificó la variable '{nombreVariable}' en el contexto local.")
+            if busquedaLocal.inicializado:
+                print("Se intenta modificar TU VIEJA SABE DONDE la variable '" + nombreVariable +"' no definida antes")
+                busquedaLocal.set_usado()
+            else:
+                print("Se intenta inicializar TU VIEJA SABE DONDE la variable '" + nombreVariable +"' no definida antes")
+                busquedaLocal.set_inicializado()
+        # Si la variable está en el contexto global
+        elif busquedaGlobal is not None:
+            print(f"Se modificó la variable '{nombreVariable}' en el contexto global.")
+            if busquedaGlobal.inicializado:
+                print("Se intenta modificar TU VIEJA SABE DONDE la variable '" + nombreVariable +"' no definida antes")
+                busquedaGlobal.set_usado()
+            else:
+                print("Se intenta inicializar TU VIEJA SABE DONDE la variable '" + nombreVariable +"' no definida antes")
+                busquedaGlobal.set_inicializado()
+        else:
+            print("Se intenta inicializar/modificar TU VIEJA SABE DONDE la variable '" + nombreVariable +"' no definida antes")
+            print(f"Error: La variable '{nombreVariable}' no fue declarada previamente.")
+    
     def visitTerminal(self, node: TerminalNode):
         # print(" ---> Token: " + node.getText())
         self.numTokens += 1

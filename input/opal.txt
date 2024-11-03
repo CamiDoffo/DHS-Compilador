@@ -1,8 +1,9 @@
 int caca2;
 double caca1=0 ;
 int caca;
-int caca3;
 for (x=0; x<10; x=x*1) {
+    int caca3=0;
     miVariable = 0;
+    caca3 = 5;
 }
 int pepe(int a, int b)
