@@ -1,11 +1,12 @@
 # usar esto usando singleton (?
 
 class ID:
-    def __init__(self, nombre, tipoDato, inicializado=False, usado=False):
+    def __init__(self, nombre, tipoDato, inicializado=False, usado=False, declarado=True):
         self.nombre = nombre
         self.tipoDato = tipoDato
         self.inicializado = inicializado
         self.usado = usado
+        self.declarado = declarado
     
     def set_inicializado(self):
         self.inicializado = True
@@ -14,6 +15,18 @@ class ID:
     def __str__(self):
         return "ID: "+self.tipoDato+" "+self.nombre+": Inicializado? "+str(self.inicializado)+", Usado? "+str(self.usado)
     
+    def mostrarVarsSinUsar(self):
+        # Filtrar las variables que no han sido usadas
+        vars_sin_usar = [id for id in self.identificadores if not id.usado]
+        
+        # Imprimir las variables sin usar
+        if vars_sin_usar:
+            print("Variables sin usar:")
+            for id in vars_sin_usar:
+                print(id)  # Esto llamará al método __str__ de la clase ID
+        else:
+            print("No hay variables sin usar.")
+            
 class Contexto:
     """
     Contexto son las anidaciones

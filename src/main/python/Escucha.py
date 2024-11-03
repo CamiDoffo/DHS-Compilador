@@ -23,6 +23,8 @@ class Escucha (compiladoresListener) :
         print("\tTokens: " + str(self.numTokens))
         print(self.tabla.__str__())
         self.tabla.del_Contexto()
+        
+        print(self.tabla.mostrarVarsSinUsar())
     
     def enterIwhile(self, ctx:compiladoresParser.IwhileContext):
         print("Enter WHILE")
@@ -118,41 +120,57 @@ class Escucha (compiladoresListener) :
             self.tabla.add_identificador(variable)
         elif busquedaLocal is not None:
             print("---- ERROR SEMANTICO -----")
-            print("El identificador "+nombre+" ya existe en el contexto local!")
+            print("El identificador "+nombreVariable+" ya existe en el contexto local!")
             print("La variable '" + nombreVariable + "' ya está declarada en el contexto local.")
         elif busquedaGlobal is not None:
             print("---- ERROR SEMANTICO -----")
-            print("El identificador "+nombre+" ya existe en el contexto global!")
+            print("El identificador "+nombreVariable+" ya existe en el contexto global!")
             print("La variable '" + nombreVariable + "' ya está declarada en el contexto global.")
 
-
     def exitAsignacion(self, ctx):
-        nombreVariable = ctx.getChild(0).getText()
-        # Si el nombre de la variable contiene un '=', extraemos solo el nombre
-        if '=' in nombreVariable:
-            nombreVariable = nombreVariable.split('=')[0].strip()
+        operacion = ctx.getChild(0).getText()
+        # Verificar si el nombre de la variable de la izquierda contiene un '='
+        if '=' in operacion:
+            nombreVariableIzquierda = operacion.split('=')[0].strip()
+            nombreVariableDerecha = operacion.split('=')[1].strip()
 
-        busquedaLocal = self.tabla.buscar_local(nombreVariable)
-        busquedaGlobal = self.tabla.buscar_global(nombreVariable)
+        busquedaLocalIzquierda = self.tabla.buscar_local(nombreVariableIzquierda)
+        busquedaGlobalIzquierda = self.tabla.buscar_global(nombreVariableIzquierda)
 
-        # Si la variable está en el contexto local
-        if busquedaLocal is not None:
-            print(f"Se intenta modificar la variable '{nombreVariable}' en el contexto local.")
-            if busquedaLocal.inicializado:
-                print("Se modificó TU VIEJA SABE DONDE la variable '" + nombreVariable + "'")
-                busquedaLocal.set_usado()
-            else:
-                print(f"Error: La variable '{nombreVariable}' debe inicializarse antes de asignarse.")
-        # Si la variable está en el contexto global
-        elif busquedaGlobal is not None:
-            print(f"Se intenta modificar la variable '{nombreVariable}' en el contexto global.")
-            if busquedaGlobal.inicializado:
-                print("Se modificó TU VIEJA SABE DONDE la variable '" + nombreVariable + "'")
-                busquedaGlobal.set_usado()
-            else:
-                print(f"Error: La variable '{nombreVariable}' debe inicializarse antes de asignarse.")
+        # Verificar si el nombre de la variable de la derecha es un número
+        if nombreVariableDerecha.isdigit():  # Si es un número
+            #print(f"Se asignó el valor numérico '{nombreVariableDerecha}' a la variable '{nombreVariableIzquierda}'.")
+            # Aquí no se necesita verificar si la variable izquierda está inicializada
+            pass
         else:
-            print(f"Error: La variable '{nombreVariable}' no fue declarada previamente.")
+            # Buscar la variable de la derecha en el contexto
+            busquedaLocalDerecha = self.tabla.buscar_local(nombreVariableDerecha)
+            busquedaGlobalDerecha = self.tabla.buscar_global(nombreVariableDerecha)
+
+            # Verificar que la variable de la derecha esté inicializada si existe
+            if nombreVariableDerecha and (busquedaLocalDerecha is None and busquedaGlobalDerecha is None):
+                print(f"Error: La variable '{nombreVariableDerecha}' no fue declarada previamente.")
+                return  # Salir si la variable derecha no existe
+            elif nombreVariableDerecha:
+                if busquedaLocalDerecha and not busquedaLocalDerecha.inicializado:
+                    print(f"Error: La variable '{nombreVariableDerecha}' debe inicializarse antes de usarse en la asignación a '{nombreVariableIzquierda}'.")
+                    return
+                elif busquedaGlobalDerecha and not busquedaGlobalDerecha.inicializado:
+                    print(f"Error: La variable '{nombreVariableDerecha}' debe inicializarse antes de usarse en la asignación a '{nombreVariableIzquierda}'.")
+                    return
+
+        # Aquí ya se supone que la variable derecha está inicializada (si no es un número)
+        # Puedes proceder a modificar la variable izquierda sin la verificación de inicialización
+        if busquedaLocalIzquierda is not None or busquedaGlobalIzquierda is not None:
+            print(f"Se intenta modificar la variable '{nombreVariableIzquierda}' en el contexto {'local' if busquedaLocalIzquierda is not None else 'global'}.")
+            print("Se modificó TU VIEJA SABE DONDE la variable '" + nombreVariableIzquierda + "'")
+            if busquedaLocalIzquierda is not None:
+                busquedaLocalIzquierda.set_usado()
+            if busquedaGlobalIzquierda is not None:
+                busquedaGlobalIzquierda.set_usado()
+        else:
+            print(f"Error: La variable '{nombreVariableIzquierda}' no fue declarada previamente.")
+
 
     def visitTerminal(self, node: TerminalNode):
         # print(" ---> Token: " + node.getText())
@@ -164,3 +182,4 @@ class Escucha (compiladoresListener) :
         
     def enterEveryRule(self, ctx):
         self.numNodos += 1
+        

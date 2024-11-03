@@ -1,9 +1,11 @@
-int caca2;
+int caca2=10;
 double caca1=0 ;
-int caca;
+double jose;
+int caca = caca1;
 for (x=0; x<10; x=x*1) {
     int caca3=0;
     miVariable = 0;
+    jose = caca2;
     int pepe;
     caca1 = 10;
     caca3 = 5;
