@@ -91,8 +91,6 @@ class TablaSimbolos:
         """
         if self.contextos is not None:
             if nombre in self.contextos[-1].ids:
-                print("---- ERROR SEMANTICO -----")
-                print("El identificador "+nombre+" ya existe en el contexto local!")
                 return self.contextos[-1].ids[nombre]
         return None
             
@@ -102,8 +100,6 @@ class TablaSimbolos:
         """
         for ctx in reversed(self.contextos):
             if nombre in ctx.ids:
-                print("---- ERROR SEMANTICO -----")
-                print("El identificador "+nombre+" ya existe en el contexto global!")
                 return ctx.ids[nombre]
         return None
     def __str__(self):

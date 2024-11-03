@@ -4,6 +4,9 @@ int caca;
 for (x=0; x<10; x=x*1) {
     int caca3=0;
     miVariable = 0;
+    int pepe;
+    caca1 = 10;
     caca3 = 5;
 }
 int pepe(int a, int b)
+int pepe2(int a, int b)
