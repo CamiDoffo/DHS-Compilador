@@ -13,34 +13,33 @@ class Escucha (compiladoresListener) :
     numNodos = 0
     tabla = TablaSimbolos.get_instancia()
     def enterPrograma(self, ctx:compiladoresParser.ProgramaContext):
-        print("Comienza la compilacion")
+        print("\t\tComienza la compilacion")
 
     # Exit a parse tree produced by compiladoresParser#programa.
     def exitPrograma(self, ctx:compiladoresParser.ProgramaContext):
-        print("Fin de la compilacion")
-        print("Se encontraron")
-        print("\tNodos: " + str(self.numNodos))
-        print("\tTokens: " + str(self.numTokens))
+        print("\t\tFin de la compilacion")
+        # print("Se encontraron")
+        # print("\tNodos: " + str(self.numNodos))
+        # print("\tTokens: " + str(self.numTokens))
         print(self.tabla.__str__())
+        self.tabla.mostrarVarsSinUsar()
         self.tabla.del_Contexto()
         
-        print(self.tabla.mostrarVarsSinUsar())
     
     def enterIwhile(self, ctx:compiladoresParser.IwhileContext):
-        print("Enter WHILE")
+        print("\t\tEnter WHILE")
         
     def exitIwhile(self, ctx: compiladoresParser.IwhileContext):
         self.tabla.add_contexto(ctx)
-        print("FIN del WHILE")
-        print("\tCantidad de hijos: " + str(ctx.getChildCount()))
-        print("\tTokens: " + ctx.getText())
+        print("\t\tFIN WHILE")
+        # print("\tCantidad de hijos: " + str(ctx.getChildCount()))
+        # print("\tTokens: " + ctx.getText())
         self.tabla.del_Contexto()
         
     def enterDeclaracion(self, ctx: compiladoresParser.DeclaracionContext):
-        print(" ### Declaracion")
+        print("\t\t Declaracion")
         
     def exitDeclaracion(self, ctx: compiladoresParser.DeclaracionContext):
-        #TODO detalle porque imprime que no lo encuentra en los dos contextos
         # se solucionadoria con if anidado y llamando al buscar por separado en cada caso
         nombreVariable = ctx.getChild(1).getText()
         tipoDeDato = ctx.getChild(0).getText()
@@ -53,51 +52,51 @@ class Escucha (compiladoresListener) :
         #Las busquedas si devuelven None es porque encontraron algo
         busquedaGlobal = self.tabla.buscar_global(nombreVariable)
         busquedaLocal = self.tabla.buscar_local(nombreVariable)
-        # chequeo que paso (no hace falta) TODO borrar
+        
         if busquedaGlobal is None and busquedaLocal is None :
-            print('"'+nombreVariable+'"'+" no fue declarada previamente")
+            #print('"'+nombreVariable+'"'+" no fue declarada previamente")
             self.tabla.add_identificador(variable)
         
-        print("Nombre variable: " + nombreVariable)
+        print("\033[1;32m" +"Nombre variable: " + nombreVariable+ "\033[0m")
         
     def enterIfor(self, ctx: compiladoresParser.IforContext):
-        print("Enter FOR")
+        print("\t\tEnter FOR")
         
     def exitIfor(self, ctx: compiladoresParser.IforContext):
         self.tabla.add_contexto(ctx)
-        print("FIN del FOR")
-        print("\tCantidad de hijos: " + str(ctx.getChildCount()))
-        print("\tTokens: " + ctx.getText())
+        print("\t\tFIN FOR")
+        # print("\tCantidad de hijos: " + str(ctx.getChildCount()))
+        # print("\tTokens: " + ctx.getText())
         self.tabla.del_Contexto()
         
     def enterIif(self, ctx: compiladoresParser.IifContext):
-        print("ENTER IF")
+        print("\t\tENTER IF")
     
     def exitIif(self, ctx: compiladoresParser.IifContext):
         self.tabla.add_contexto(ctx)
-        print("EXIT del IF")
-        print("\tCantidad de hijos: " + str(ctx.getChildCount()))
-        print("\tTokens: " + ctx.getText())
+        print("\t\tEXIT IF")
+        # print("\tCantidad de hijos: " + str(ctx.getChildCount()))
+        # print("\tTokens: " + ctx.getText())
         self.tabla.del_Contexto()
         
     def enterElse(self, ctx: compiladoresParser.ElseContext):
-        print("ENTER ELSE")
+        print("\t\tENTER ELSE")
     
     def exitElse(self, ctx: compiladoresParser.ElseContext):
         self.tabla.add_contexto(ctx)
-        print("EXIT del ELSE")
-        print("\tCantidad de hijos: " + str(ctx.getChildCount()))
-        print("\tTokens: " + ctx.getText())
+        print("\t\tEXIT del ELSE")
+        # print("\tCantidad de hijos: " + str(ctx.getChildCount()))
+        # print("\tTokens: " + ctx.getText())
         self.tabla.del_Contexto()
         
     def enterFunciones(self, ctx: compiladoresParser.FuncionesContext):
-        print("FUNCION")
+        print("\t\tFUNCION")
         
     def exitFunciones(self, ctx: compiladoresParser.FuncionesContext):
         #Se agregan () para diferenciar de las variables y por si una funcion y una variable se llaman igual
         funcion = ID(ctx.getChild(1).getText()+"()", ctx.getChild(0).getText())
         self.tabla.add_identificador(funcion)
-        print("\tTokens: " + ctx.getText())        
+        print("\t" + ctx.getText())        
         
         
     def exitInic(self, ctx):
@@ -114,18 +113,13 @@ class Escucha (compiladoresListener) :
 
         # Si la variable no existe en ningún contexto, la inicializamos y agregamos
         if busquedaLocal is None and busquedaGlobal is None:
-            print("Se inicializó TU VIEJA SABE DONDE la variable '" + nombreVariable + "'")
-            print(f"Se inicializó la variable '{nombreVariable}' en el contexto actual.")
+            print("\033[1;32m" +f"Se inicializó la variable '{nombreVariable}' en el contexto actual."+ "\033[0m")
             variable.set_inicializado()  # Marcar como inicializada
             self.tabla.add_identificador(variable)
         elif busquedaLocal is not None:
-            print("---- ERROR SEMANTICO -----")
-            print("El identificador "+nombreVariable+" ya existe en el contexto local!")
-            print("La variable '" + nombreVariable + "' ya está declarada en el contexto local.")
+            print("\033[1;31m" +"ERROR SEMANTICO: La variable '" + nombreVariable + "' ya está declarada en el contexto local."+ "\033[0m")
         elif busquedaGlobal is not None:
-            print("---- ERROR SEMANTICO -----")
-            print("El identificador "+nombreVariable+" ya existe en el contexto global!")
-            print("La variable '" + nombreVariable + "' ya está declarada en el contexto global.")
+            print("\033[1;31m" + "ERROR SEMANTICO: La variable '" + nombreVariable + "' ya está declarada en el contexto global."+ "\033[0m")
 
     def exitAsignacion(self, ctx):
         operacion = ctx.getChild(0).getText()
@@ -136,40 +130,59 @@ class Escucha (compiladoresListener) :
 
         busquedaLocalIzquierda = self.tabla.buscar_local(nombreVariableIzquierda)
         busquedaGlobalIzquierda = self.tabla.buscar_global(nombreVariableIzquierda)
-
+        # Buscar la variable de la derecha en el contexto
+        busquedaLocalDerecha = self.tabla.buscar_local(nombreVariableDerecha)
+        busquedaGlobalDerecha = self.tabla.buscar_global(nombreVariableDerecha)
+        
         # Verificar si el nombre de la variable de la derecha es un número
         if nombreVariableDerecha.isdigit():  # Si es un número
-            #print(f"Se asignó el valor numérico '{nombreVariableDerecha}' a la variable '{nombreVariableIzquierda}'.")
+            print("\033[1;32m" +f"Se asignó el valor numérico '{nombreVariableDerecha}' a la variable '{nombreVariableIzquierda}'."+ "\033[0m")
             # Aquí no se necesita verificar si la variable izquierda está inicializada
             pass
         else:
-            # Buscar la variable de la derecha en el contexto
-            busquedaLocalDerecha = self.tabla.buscar_local(nombreVariableDerecha)
-            busquedaGlobalDerecha = self.tabla.buscar_global(nombreVariableDerecha)
-
             # Verificar que la variable de la derecha esté inicializada si existe
             if nombreVariableDerecha and (busquedaLocalDerecha is None and busquedaGlobalDerecha is None):
-                print(f"Error: La variable '{nombreVariableDerecha}' no fue declarada previamente.")
+                print("\033[1;31m" + f"ERROR SEMANTICO: La variable '{nombreVariableDerecha}' no fue declarada previamente!"+ "\033[0m")
                 return  # Salir si la variable derecha no existe
             elif nombreVariableDerecha:
                 if busquedaLocalDerecha and not busquedaLocalDerecha.inicializado:
-                    print(f"Error: La variable '{nombreVariableDerecha}' debe inicializarse antes de usarse en la asignación a '{nombreVariableIzquierda}'.")
+                    print("\033[1;31m" + f"ERROR SEMANTICO: La variable '{nombreVariableDerecha}' debe inicializarse antes de usarse en la asignación a '{nombreVariableIzquierda}'!"+ "\033[0m")
                     return
                 elif busquedaGlobalDerecha and not busquedaGlobalDerecha.inicializado:
-                    print(f"Error: La variable '{nombreVariableDerecha}' debe inicializarse antes de usarse en la asignación a '{nombreVariableIzquierda}'.")
+                    print("\033[1;31m" + f"ERROR SEMANTICO: La variable '{nombreVariableDerecha}' debe inicializarse antes de usarse en la asignación a '{nombreVariableIzquierda}'!"+ "\033[0m")
                     return
+            # Verificar compatibilidad de tipos
+                if busquedaLocalIzquierda:
+                    tipoIzquierda = busquedaLocalIzquierda.tipoDato
+                else:
+                    if busquedaGlobalIzquierda is None:
+                        print("\033[1;31m" + f"ERROR SEMANTICO: La variable '{nombreVariableIzquierda}' no fue declarada previamente."+ "\033[0m")
+                        return
+                    tipoIzquierda = busquedaGlobalIzquierda.tipoDato
 
+                if busquedaLocalDerecha:
+                    tipoDerecha = busquedaLocalDerecha.tipoDato
+                else:
+                    if busquedaGlobalDerecha is None:
+                        print("\033[1;31m" + f"ERROR SEMANTICO: La variable '{nombreVariableDerecha}' no fue declarada previamente."+ "\033[0m")
+                        return
+                    tipoDerecha = busquedaGlobalDerecha.tipoDato
+
+                # Ahora que ambas variables están verificadas, comprueba su compatibilidad
+                if tipoIzquierda != tipoDerecha:
+                    print("\033[1;33m" +f"Advertencia: No se puede asignar un valor de tipo '{tipoDerecha}' a una variable de tipo '{tipoIzquierda}'."+ "\033[0m")
+                    return
         # Aquí ya se supone que la variable derecha está inicializada (si no es un número)
         # Puedes proceder a modificar la variable izquierda sin la verificación de inicialización
         if busquedaLocalIzquierda is not None or busquedaGlobalIzquierda is not None:
-            print(f"Se intenta modificar la variable '{nombreVariableIzquierda}' en el contexto {'local' if busquedaLocalIzquierda is not None else 'global'}.")
-            print("Se modificó TU VIEJA SABE DONDE la variable '" + nombreVariableIzquierda + "'")
+            print("\033[1;32m" +f"Se intenta modificar la variable '{nombreVariableIzquierda}' en el contexto {'local' if busquedaLocalIzquierda is not None else 'global'}."+ "\033[0m")
             if busquedaLocalIzquierda is not None:
                 busquedaLocalIzquierda.set_usado()
             if busquedaGlobalIzquierda is not None:
-                busquedaGlobalIzquierda.set_usado()
+                busquedaGlobalIzquierda.set_usado() 
         else:
-            print(f"Error: La variable '{nombreVariableIzquierda}' no fue declarada previamente.")
+            print("\033[1;31m" + f"ERROR SEMANTICO: La variable '{nombreVariableIzquierda}' no fue declarada previamente."+ "\033[0m")
+            return
 
 
     def visitTerminal(self, node: TerminalNode):
@@ -177,7 +190,7 @@ class Escucha (compiladoresListener) :
         self.numTokens += 1
         
     def visitErrorNode(self, node: ErrorNode):
-        print(" ---> ERROR SINTACTICO")
+        print("\033[1;31m" +" ERROR SINTACTICO"+ "\033[0m")
         print(node.getText())
         
     def enterEveryRule(self, ctx):

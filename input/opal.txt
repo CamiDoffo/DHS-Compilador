@@ -1,14 +1,14 @@
-int caca2=10;
-double caca1=0 ;
+int pepe=10;
+double pepe1= 100;
 double jose;
-int caca = caca1;
+int juan = pepe;
 for (x=0; x<10; x=x*1) {
-    int caca3=0;
+    int jose3=0;
     miVariable = 0;
-    jose = caca2;
+    jose = ana2;
     int pepe;
-    caca1 = 10;
-    caca3 = 5;
+    pepe1 = pepe;
+    pame3 = 5;
 }
 int pepe(int a, int b)
 int pepe2(int a, int b)

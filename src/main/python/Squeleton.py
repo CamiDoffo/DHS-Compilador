@@ -7,25 +7,19 @@ class ID:
         self.inicializado = inicializado
         self.usado = usado
         self.declarado = declarado
+    def get_tipoDato(self):
+        return str(self.tipoDato)
     
     def set_inicializado(self):
         self.inicializado = True
+    
     def set_usado(self):
         self.usado = True
+    
     def __str__(self):
         return "ID: "+self.tipoDato+" "+self.nombre+": Inicializado? "+str(self.inicializado)+", Usado? "+str(self.usado)
     
-    def mostrarVarsSinUsar(self):
-        # Filtrar las variables que no han sido usadas
-        vars_sin_usar = [id for id in self.identificadores if not id.usado]
-        
-        # Imprimir las variables sin usar
-        if vars_sin_usar:
-            print("Variables sin usar:")
-            for id in vars_sin_usar:
-                print(id)  # Esto llamará al método __str__ de la clase ID
-        else:
-            print("No hay variables sin usar.")
+    
             
 class Contexto:
     """
@@ -43,7 +37,6 @@ class Contexto:
         ids_repr = ""
         for id in self.ids.values():
             ids_repr += id.__str__() + "\n"
-        print("caca2")
         return "Contexto: \n"+ ids_repr
 
 class TablaSimbolos:
@@ -91,10 +84,6 @@ class TablaSimbolos:
     def add_identificador(self, id):
         """
         Agrega un identificador al contexto actual
-        TODO ver si esto en serio sirve
-        porque si hago una asignacion despues de inicializarla
-        esto no lo va a tomar como bien
-        capaz solo dejar en contexto
         """
         self.contextos[-1].agregarID(id)
     
@@ -120,3 +109,20 @@ class TablaSimbolos:
         for ctx in self.contextos:
             ctx_repr += ctx.__str__() + "\n"
         return "Tabla de Simbolos:\n" + ctx_repr
+    
+    def mostrarVarsSinUsar(self):
+        # Filtrar las variables que no han sido usadas
+        vars_sin_usar = ""
+        for contexto in self.contextos:
+            for id in contexto.ids.values():
+                if not id.usado:  # Verificar si la variable no ha sido usada
+                    vars_sin_usar += id.__str__()+"\n"
+        
+        # Imprimir las variables sin usar
+        if vars_sin_usar is not None:
+            print("Variables sin usar:")
+            # for id in vars_sin_usar:
+            #     print(id)  # Esto llamará al método _str_ de la clase ID
+            print(vars_sin_usar)
+        else:
+            print("No hay variables sin usar.")

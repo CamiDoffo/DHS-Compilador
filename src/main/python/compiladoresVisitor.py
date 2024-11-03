@@ -59,8 +59,23 @@ class compiladoresVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by compiladoresParser#asignacionPYC.
+    def visitAsignacionPYC(self, ctx:compiladoresParser.AsignacionPYCContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by compiladoresParser#asignacion.
     def visitAsignacion(self, ctx:compiladoresParser.AsignacionContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compiladoresParser#ifor.
+    def visitIfor(self, ctx:compiladoresParser.IforContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compiladoresParser#init.
+    def visitInit(self, ctx:compiladoresParser.InitContext):
         return self.visitChildren(ctx)
 
 
@@ -126,16 +141,6 @@ class compiladoresVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by compiladoresParser#opcomp.
     def visitOpcomp(self, ctx:compiladoresParser.OpcompContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by compiladoresParser#ifor.
-    def visitIfor(self, ctx:compiladoresParser.IforContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by compiladoresParser#init.
-    def visitInit(self, ctx:compiladoresParser.InitContext):
         return self.visitChildren(ctx)
 
 
