@@ -149,7 +149,9 @@ funciones: tipoDatos ID PA argumentos PC
           | VOID ID PA argumentos PC
           ;
 
-argumentos: argumento arg;
+argumentos: argumento arg
+          |
+          ;
 arg : COMA argumentos
     |
     ;

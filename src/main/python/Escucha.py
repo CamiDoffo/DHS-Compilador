@@ -1,7 +1,7 @@
 from antlr4 import ErrorNode, TerminalNode
 from  compiladoresListener import compiladoresListener
 from compiladoresParser import compiladoresParser
-from Squeleton import TablaSimbolos
+from Squeleton import *
 # mientras se va creando el arbol, avanza
 # para analisis semantico
 
@@ -37,15 +37,20 @@ class Escucha (compiladoresListener) :
         print(" ### Declaracion")
         
     def exitDeclaracion(self, ctx: compiladoresParser.DeclaracionContext):
-        # aca deberia chequear que cuando se declare una variable ya no este en la tabla de simbolos
-        # if ctx.children is not None and len(ctx.children) > 1:
-        #     nombre_variable = ctx.getChild(1).getText()  # Suponiendo que el nombre está en el índice 1
-        #     tipo_dato = ctx.getChild(0).getText()  # Suponiendo que el tipo está en el índice 0
-            
-        #     print("Número de hijos: " + str(len(ctx.children)))
-        #     print("Nombre variable: " + nombre_variable)
-        variable = TablaSimbolos.Variable(ctx.getChild(1).getText(), ctx.getChild(0).getText())
-        self.tabla.add_contexto(variable)
+        #TODO detalle porque imprime que no lo encuentra en los dos contextos
+        # se solucionadoria con if anidado y llamando al buscar por separado en cada caso
+        nombreVariable = ctx.getChild(1).getText()
+        tipoDeDato = ctx.getChild(0).getText()
+        variable = ID(nombreVariable, tipoDeDato)
+        
+        #Las busquedas si devuelven None es porque encontraron algo
+        busquedaGlobal = self.tabla.buscar_global(nombreVariable)
+        busquedaLocal = self.tabla.buscar_local(nombreVariable)
+        # chequeo que paso (no hace falta) TODO borrar
+        if busquedaGlobal is None and busquedaLocal is None :
+            print('"'+nombreVariable+'"'+" no fue declarada previamente")
+            self.tabla.add_identificador(variable)
+        
         print("Nombre variable: " + ctx.getChild(1).getText())
         
     def enterIfor(self, ctx: compiladoresParser.IforContext):
@@ -82,15 +87,22 @@ class Escucha (compiladoresListener) :
         print("FUNCION")
         
     def exitFunciones(self, ctx: compiladoresParser.FuncionesContext):
-        funcion = TablaSimbolos.Funcion(ctx.getChild().getText(), ctx)
-        self.tabla.add_contexto(funcion)
-        self.tabla.add_contexto(ctx)
-        print("\tTokens: " + ctx.getText())
-        
-    def exitInic(self, ctx):#cambiar inic a true
-        return super().exitInic(ctx)
-    def exitAsignacion(self, ctx):#cambiar usado a true
-        return super().exitAsignacion(ctx)
+        funcion = ID(ctx.getChild(1).getText(), ctx.getChild(0).getText())
+        self.tabla.add_identificador(funcion)
+        print("\tTokens: " + ctx.getText())        
+    
+    def exitAsignacion(self, ctx: compiladoresParser.AsignacionContext):#cambiar usado a true
+        nombreVariable= ctx.getChild(0).getText()
+        busquedaLocal = self.tabla.buscar_local(nombreVariable)
+        busquedaGlobal = self.tabla.buscar_global(nombreVariable)
+        #buscamos si la variable fue declarada globalmente
+        if busquedaLocal is not None or busquedaGlobal is not None :
+            print("Se inicializo/modifico TU VIEJA SABE DONDE la variable '" + nombreVariable +"'")
+            if busquedaGlobal.inicializado is True:
+                busquedaGlobal.set_usado()
+            else:
+                busquedaGlobal.set_inicializado()
+            
         
     def visitTerminal(self, node: TerminalNode):
         # print(" ---> Token: " + node.getText())
