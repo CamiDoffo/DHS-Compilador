@@ -43,9 +43,6 @@ class Escucha (compiladoresListener) :
         # se solucionadoria con if anidado y llamando al buscar por separado en cada caso
         nombreVariable = ctx.getChild(1).getText()
         tipoDeDato = ctx.getChild(0).getText()
-                # Si el nombre de la variable contiene un '=', tomamos solo la parte anterior
-        if '=' in nombreVariable:
-            nombreVariable = nombreVariable.split('=')[0].strip()  # Tomamos solo el nombre sin espacios
 
         variable = ID(nombreVariable, tipoDeDato)
         
@@ -56,8 +53,11 @@ class Escucha (compiladoresListener) :
         if busquedaGlobal is None and busquedaLocal is None :
             #print('"'+nombreVariable+'"'+" no fue declarada previamente")
             self.tabla.add_identificador(variable)
+            print("\033[1;32m" +"Nombre variable: " + nombreVariable+ "\033[0m")
+        else:
+            print("\033[1;31m" + f"ERROR SEMANTICO: La variable '{nombreVariable}' fue declarada previamente."+ "\033[0m")
+            return
         
-        print("\033[1;32m" +"Nombre variable: " + nombreVariable+ "\033[0m")
         
     def enterIfor(self, ctx: compiladoresParser.IforContext):
         print("\t\tEnter FOR")

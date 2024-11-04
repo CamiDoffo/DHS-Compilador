@@ -119,7 +119,7 @@ class TablaSimbolos:
                     vars_sin_usar += id.__str__()+"\n"
         
         # Imprimir las variables sin usar
-        if vars_sin_usar is not None:
+        if vars_sin_usar is not "":
             print("Variables sin usar:")
             # for id in vars_sin_usar:
             #     print(id)  # Esto llamará al método _str_ de la clase ID

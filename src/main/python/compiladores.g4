@@ -106,12 +106,13 @@ term: factor t ;
 t    : MULT factor t
     | DIV factor t
     | MOD factor t
+    |
     ;
 factor: NUMERO
       | ID
       ;
 
-iwhile : WHILE PA ID PC instruccion;
+iwhile : WHILE PA cond PC instruccion;
 
 bloque : LLA instrucciones LLC;
 

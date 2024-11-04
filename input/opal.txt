@@ -2,13 +2,15 @@ int pepe=10;
 double pepe1= 100;
 double jose;
 int juan = pepe;
-for (x=0; x<10; x=x*1) {
-    int jose3=0;
+for (x=1; x<10; x=x*2) {
     miVariable = 0;
     jose = ana2;
     int pepe;
     pepe1 = pepe;
-    pame3 = 5;
 }
 int pepe(int a, int b)
 int pepe2(int a, int b)
+int x = 5;
+while (x>0){
+    x=1;
+}
