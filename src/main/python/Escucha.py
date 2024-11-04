@@ -2,6 +2,7 @@ from antlr4 import ErrorNode, TerminalNode
 from  compiladoresListener import compiladoresListener
 from compiladoresParser import compiladoresParser
 from Squeleton import *
+import re
 # mientras se va creando el arbol, avanza
 # para analisis semantico
 
@@ -126,63 +127,66 @@ class Escucha (compiladoresListener) :
         # Verificar si el nombre de la variable de la izquierda contiene un '='
         if '=' in operacion:
             nombreVariableIzquierda = operacion.split('=')[0].strip()
-            nombreVariableDerecha = operacion.split('=')[1].strip()
+            expresionDerecha = operacion.split('=')[1].strip()
+            
+            busquedaLocalIzquierda = self.tabla.buscar_local(nombreVariableIzquierda)
+            busquedaGlobalIzquierda = self.tabla.buscar_global(nombreVariableIzquierda)
 
-        busquedaLocalIzquierda = self.tabla.buscar_local(nombreVariableIzquierda)
-        busquedaGlobalIzquierda = self.tabla.buscar_global(nombreVariableIzquierda)
-        # Buscar la variable de la derecha en el contexto
-        busquedaLocalDerecha = self.tabla.buscar_local(nombreVariableDerecha)
-        busquedaGlobalDerecha = self.tabla.buscar_global(nombreVariableDerecha)
-        
-        # Verificar si el nombre de la variable de la derecha es un número
-        if nombreVariableDerecha.isdigit():  # Si es un número
-            print("\033[1;32m" +f"Se asignó el valor numérico '{nombreVariableDerecha}' a la variable '{nombreVariableIzquierda}'."+ "\033[0m")
-            # Aquí no se necesita verificar si la variable izquierda está inicializada
-            pass
-        else:
-            # Verificar que la variable de la derecha esté inicializada si existe
-            if nombreVariableDerecha and (busquedaLocalDerecha is None and busquedaGlobalDerecha is None):
-                print("\033[1;31m" + f"ERROR SEMANTICO: La variable '{nombreVariableDerecha}' no fue declarada previamente!"+ "\033[0m")
-                return  # Salir si la variable derecha no existe
-            elif nombreVariableDerecha:
-                if busquedaLocalDerecha and not busquedaLocalDerecha.inicializado:
-                    print("\033[1;31m" + f"ERROR SEMANTICO: La variable '{nombreVariableDerecha}' debe inicializarse antes de usarse en la asignación a '{nombreVariableIzquierda}'!"+ "\033[0m")
-                    return
-                elif busquedaGlobalDerecha and not busquedaGlobalDerecha.inicializado:
-                    print("\033[1;31m" + f"ERROR SEMANTICO: La variable '{nombreVariableDerecha}' debe inicializarse antes de usarse en la asignación a '{nombreVariableIzquierda}'!"+ "\033[0m")
-                    return
-            # Verificar compatibilidad de tipos
-                if busquedaLocalIzquierda:
-                    tipoIzquierda = busquedaLocalIzquierda.tipoDato
-                else:
-                    if busquedaGlobalIzquierda is None:
-                        print("\033[1;31m" + f"ERROR SEMANTICO: La variable '{nombreVariableIzquierda}' no fue declarada previamente."+ "\033[0m")
+            # Asegurarse de que la variable izquierda está declarada
+            if busquedaLocalIzquierda is None and busquedaGlobalIzquierda is None:
+                print("\033[1;31m" + f"ERROR SEMANTICO: La variable '{nombreVariableIzquierda}' no fue declarada previamente."+ "\033[0m")
+                return
+            
+            # Obtener el tipo de la variable izquierda
+            tipoIzquierda = (busquedaLocalIzquierda.tipoDato if busquedaLocalIzquierda else busquedaGlobalIzquierda.tipoDato)
+
+            # Procesar la expresión de la derecha, ignorando operadores aritméticos
+            terminos = re.split(r'(\+|-|\*|/)', expresionDerecha)
+            
+            for termino in terminos:
+                termino = termino.strip()
+                if termino in {'+', '-', '*', '/'}:
+                    # Ignorar operadores aritméticos
+                    continue
+                elif termino.isdigit():
+                    # Si es un número, continuar
+                    continue
+                elif termino.isidentifier():  # Verificar si es un identificador (variable)
+                    # Buscar la variable en el contexto
+                    busquedaLocalDerecha = self.tabla.buscar_local(termino)
+                    busquedaGlobalDerecha = self.tabla.buscar_global(termino)
+
+                    # Verificar que la variable esté declarada
+                    if busquedaLocalDerecha is None and busquedaGlobalDerecha is None:
+                        print("\033[1;31m" + f"ERROR SEMANTICO: La variable '{termino}' no fue declarada previamente!"+ "\033[0m")
                         return
-                    tipoIzquierda = busquedaGlobalIzquierda.tipoDato
 
-                if busquedaLocalDerecha:
-                    tipoDerecha = busquedaLocalDerecha.tipoDato
-                else:
-                    if busquedaGlobalDerecha is None:
-                        print("\033[1;31m" + f"ERROR SEMANTICO: La variable '{nombreVariableDerecha}' no fue declarada previamente."+ "\033[0m")
+                    # Obtener el tipo de la variable derecha
+                    tipoDerecha = (busquedaLocalDerecha.tipoDato if busquedaLocalDerecha else busquedaGlobalDerecha.tipoDato)
+
+                    # Verificar compatibilidad de tipos
+                    if tipoIzquierda != tipoDerecha:
+                        print("\033[1;33m" + f"Advertencia: No se puede asignar un valor de tipo '{tipoDerecha}' a una variable de tipo '{tipoIzquierda}'."+ "\033[0m")
                         return
-                    tipoDerecha = busquedaGlobalDerecha.tipoDato
-
-                # Ahora que ambas variables están verificadas, comprueba su compatibilidad
-                if tipoIzquierda != tipoDerecha:
-                    print("\033[1;33m" +f"Advertencia: No se puede asignar un valor de tipo '{tipoDerecha}' a una variable de tipo '{tipoIzquierda}'."+ "\033[0m")
+                    
+                    # Marcar la variable como usada
+                    if busquedaLocalDerecha:
+                        busquedaLocalDerecha.set_usado()
+                    else:
+                        busquedaGlobalDerecha.set_usado()
+                else:
+                    # Error si no es un número ni una variable válida
+                    print("\033[1;31m" + f"ERROR SEMANTICO: El término '{termino}' no es válido en la expresión de asignación."+ "\033[0m")
                     return
-        # Aquí ya se supone que la variable derecha está inicializada (si no es un número)
-        # Puedes proceder a modificar la variable izquierda sin la verificación de inicialización
-        if busquedaLocalIzquierda is not None or busquedaGlobalIzquierda is not None:
-            print("\033[1;32m" +f"Se intenta modificar la variable '{nombreVariableIzquierda}' en el contexto {'local' if busquedaLocalIzquierda is not None else 'global'}."+ "\033[0m")
+
+            # Si todos los términos son válidos, proceder con la asignación
+            print("\033[1;32m" + f"Asignación válida: '{nombreVariableIzquierda}' = '{expresionDerecha}'."+ "\033[0m")
+            
+            # Marcar la variable izquierda como usada
             if busquedaLocalIzquierda is not None:
                 busquedaLocalIzquierda.set_usado()
-            if busquedaGlobalIzquierda is not None:
-                busquedaGlobalIzquierda.set_usado() 
-        else:
-            print("\033[1;31m" + f"ERROR SEMANTICO: La variable '{nombreVariableIzquierda}' no fue declarada previamente."+ "\033[0m")
-            return
+            else:
+                busquedaGlobalIzquierda.set_usado()
 
 
     def visitTerminal(self, node: TerminalNode):

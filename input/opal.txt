@@ -13,4 +13,9 @@ int pepe2(int a, int b)
 int x = 5;
 while (x>0){
     x=1;
+    x=x+1;
+    x=x*5;
+    x=x-2;
+    x=x/2;
+    x=pepe+2-x;
 }
