@@ -169,13 +169,53 @@ class compiladoresVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by compiladoresParser#eelse.
-    def visitEelse(self, ctx:compiladoresParser.EelseContext):
+    # Visit a parse tree produced by compiladoresParser#fexp.
+    def visitFexp(self, ctx:compiladoresParser.FexpContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by compiladoresParser#funciones.
-    def visitFunciones(self, ctx:compiladoresParser.FuncionesContext):
+    # Visit a parse tree produced by compiladoresParser#parametros.
+    def visitParametros(self, ctx:compiladoresParser.ParametrosContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compiladoresParser#para.
+    def visitPara(self, ctx:compiladoresParser.ParaContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compiladoresParser#parametro.
+    def visitParametro(self, ctx:compiladoresParser.ParametroContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compiladoresParser#funcion.
+    def visitFuncion(self, ctx:compiladoresParser.FuncionContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compiladoresParser#return.
+    def visitReturn(self, ctx:compiladoresParser.ReturnContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compiladoresParser#returnfun.
+    def visitReturnfun(self, ctx:compiladoresParser.ReturnfunContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compiladoresParser#protofun.
+    def visitProtofun(self, ctx:compiladoresParser.ProtofunContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compiladoresParser#deffuncion.
+    def visitDeffuncion(self, ctx:compiladoresParser.DeffuncionContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compiladoresParser#llamadafun.
+    def visitLlamadafun(self, ctx:compiladoresParser.LlamadafunContext):
         return self.visitChildren(ctx)
 
 

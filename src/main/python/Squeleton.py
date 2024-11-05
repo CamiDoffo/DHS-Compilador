@@ -26,18 +26,24 @@ class Contexto:
     Contexto son las anidaciones
     """
     ids = dict()
-    def __init__(self):
+    nombreContexto=""
+    def __init__(self, nombreContexto):
         # Diccionario con nombre como clave y la instancia de ID (Variable o Funcion) como valor
         self.ids = dict()
-
+        self.nombreContexto = nombreContexto
+        
     def agregarID(self, id):
         self.ids[id.nombre] = id 
+        
     def __str__(self):
         # Crear una representación en cadena para todos los IDs en el contexto
         ids_repr = ""
-        for id in self.ids.values():
-            ids_repr += id.__str__() + "\n"
-        return "Contexto: \n"+ ids_repr
+        if self.ids == dict():
+            ids_repr = "Contexto vacio."
+        else:
+            for id in self.ids.values():
+                ids_repr += id.__str__() + "\n"
+        return "Contexto "+self.nombreContexto+": \n"+ ids_repr
 
 class TablaSimbolos:
     """
@@ -61,22 +67,24 @@ class TablaSimbolos:
         if TablaSimbolos.instancia is not None:
             raise Exception("La clase Tabla de Simbolos no puede ser instanciada mas de una vez!")
         self.contextos = []
-        self.contextos.append(Contexto())#para mi no va aca esto
+        self.contextos.append(Contexto("Global"))
         TablaSimbolos.instancia = self
         
-    def add_contexto(self, contexto):
+    def add_contexto(self, nombreContexto):
         """
         Agrega un nuevo contexto a la tabla de simbolos
         """
         print("Agregando contexto ......")
-        print(self.__str__())
         #print("Instancia: "+ self.get_instancia().getText())
-        self.contextos.append(contexto)
+        nuevoContexto = Contexto(nombreContexto)
+        self.contextos.append(nuevoContexto)
+        return nuevoContexto
         
     def del_Contexto(self):
         """
         Elimina el ultimo contexto
         """
+        #print(self.__str__())
         if self.contextos is not None:
             return self.contextos.pop()
         return None
@@ -91,10 +99,8 @@ class TablaSimbolos:
         """
         Busca en el contexto actual (para for o funcion con argumentos)
         """
-        if self.contextos is not None:
-            if nombre in self.contextos[-1].ids:
-                return self.contextos[-1].ids[nombre]
-        return None
+        contexto_actual = self.contextos[-1]
+        return contexto_actual.ids.get(nombre)
             
     def buscar_global(self, nombre):
         """
@@ -119,7 +125,7 @@ class TablaSimbolos:
                     vars_sin_usar += id.__str__()+"\n"
         
         # Imprimir las variables sin usar
-        if vars_sin_usar is not "":
+        if vars_sin_usar != "":
             print("Variables sin usar:")
             # for id in vars_sin_usar:
             #     print(id)  # Esto llamará al método _str_ de la clase ID

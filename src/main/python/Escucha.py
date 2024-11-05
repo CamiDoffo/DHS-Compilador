@@ -6,8 +6,10 @@ import re
 # mientras se va creando el arbol, avanza
 # para analisis semantico
 
-# TODO ver donde cambiaria usado a true
-
+# TODO no se estan agregando las cosas al contexto actual (p.e.: declaracion)
+# TODO hacer que las otras funciones que tienen bloque se imprima el contexto como en WHILE
+# TODO todavia no anda usar una funcion en expresion aritmetica
+# TODO imprimir numeros de linea
 
 class Escucha (compiladoresListener) :
     numTokens = 0 #tokens son las hojas
@@ -15,6 +17,7 @@ class Escucha (compiladoresListener) :
     tabla = TablaSimbolos.get_instancia()
     def enterPrograma(self, ctx:compiladoresParser.ProgramaContext):
         print("\t\tComienza la compilacion")
+        #print(self.tabla.__str__())
 
     # Exit a parse tree produced by compiladoresParser#programa.
     def exitPrograma(self, ctx:compiladoresParser.ProgramaContext):
@@ -31,10 +34,12 @@ class Escucha (compiladoresListener) :
         print("\t\tEnter WHILE")
         
     def exitIwhile(self, ctx: compiladoresParser.IwhileContext):
-        self.tabla.add_contexto(ctx)
+        print(self.tabla.add_contexto("WHILE").__str__())
         print("\t\tFIN WHILE")
+        
         # print("\tCantidad de hijos: " + str(ctx.getChildCount()))
         # print("\tTokens: " + ctx.getText())
+        
         self.tabla.del_Contexto()
         
     def enterDeclaracion(self, ctx: compiladoresParser.DeclaracionContext):
@@ -51,12 +56,16 @@ class Escucha (compiladoresListener) :
         busquedaGlobal = self.tabla.buscar_global(nombreVariable)
         busquedaLocal = self.tabla.buscar_local(nombreVariable)
         
-        if busquedaGlobal is None and busquedaLocal is None :
+        if busquedaLocal is None:
+            if busquedaGlobal is None:
             #print('"'+nombreVariable+'"'+" no fue declarada previamente")
-            self.tabla.add_identificador(variable)
-            print("\033[1;32m" +"Nombre variable: " + nombreVariable+ "\033[0m")
+                self.tabla.add_identificador(variable)
+                print("\033[1;32m" +"Nombre variable: " + nombreVariable+ " es declarada en el contexto actual"+"\033[0m")
+            else:
+                self.tabla.add_identificador(variable)
+                print("\033[1;33m" +"Advertencia: La variable: " + nombreVariable+ "es redeclarada en el contexto actual"+"\033[0m")
         else:
-            print("\033[1;31m" + f"ERROR SEMANTICO: La variable '{nombreVariable}' fue declarada previamente."+ "\033[0m")
+            print("\033[1;31m" + f"ERROR SEMANTICO: La variable '{nombreVariable}' fue declarada previamente en el contexto local."+ "\033[0m")
             return
         
         
@@ -64,7 +73,7 @@ class Escucha (compiladoresListener) :
         print("\t\tEnter FOR")
         
     def exitIfor(self, ctx: compiladoresParser.IforContext):
-        self.tabla.add_contexto(ctx)
+        self.tabla.add_contexto("FOR")
         print("\t\tFIN FOR")
         # print("\tCantidad de hijos: " + str(ctx.getChildCount()))
         # print("\tTokens: " + ctx.getText())
@@ -74,7 +83,8 @@ class Escucha (compiladoresListener) :
         print("\t\tENTER IF")
     
     def exitIif(self, ctx: compiladoresParser.IifContext):
-        self.tabla.add_contexto(ctx)
+        self.tabla.add_contexto("IF")
+        print(ctx.IF.getText())
         print("\t\tEXIT IF")
         # print("\tCantidad de hijos: " + str(ctx.getChildCount()))
         # print("\tTokens: " + ctx.getText())
@@ -84,21 +94,30 @@ class Escucha (compiladoresListener) :
         print("\t\tENTER ELSE")
     
     def exitElse(self, ctx: compiladoresParser.ElseContext):
-        self.tabla.add_contexto(ctx)
+        self.tabla.add_contexto("ELSE")
         print("\t\tEXIT del ELSE")
         # print("\tCantidad de hijos: " + str(ctx.getChildCount()))
         # print("\tTokens: " + ctx.getText())
         self.tabla.del_Contexto()
         
-    def enterFunciones(self, ctx: compiladoresParser.FuncionesContext):
+    def enterProtofun(self, ctx: compiladoresParser.ProtofunContext):
         print("\t\tFUNCION")
         
-    def exitFunciones(self, ctx: compiladoresParser.FuncionesContext):
+    def exitProtofun(self, ctx: compiladoresParser.ProtofunContext):
         #Se agregan () para diferenciar de las variables y por si una funcion y una variable se llaman igual
-        funcion = ID(ctx.getChild(1).getText()+"()", ctx.getChild(0).getText())
-        self.tabla.add_identificador(funcion)
-        print("\t" + ctx.getText())        
-        
+        nombreFuncion= ctx.getChild(1).getText()
+        funcion = ID(nombreFuncion, ctx.getChild(0).getText())
+        busquedaLocal = self.tabla.buscar_local(nombreFuncion)
+        busquedaGlobal = self.tabla.buscar_global(nombreFuncion)
+        if busquedaLocal is None and busquedaGlobal is None:
+            print("\033[1;32m" +f"Se inicializó la variable '{nombreFuncion}' en el contexto actual."+ "\033[0m")
+            funcion.set_inicializado()  # Marcar como inicializada
+            self.tabla.add_identificador(funcion)
+        elif busquedaLocal is not None:
+            print("\033[1;31m" +"ERROR SEMANTICO: La variable '" + nombreFuncion + "' ya está declarada"+ "\033[0m")
+        elif busquedaGlobal is not None:
+            print("\033[1;31m" + "ERROR SEMANTICO: La variable '" + nombreFuncion + "' ya está declarada"+ "\033[0m")
+        print("\t" + ctx.getText()) 
         
     def exitInic(self, ctx):
         nombreVariable = ctx.getChild(1).getText()

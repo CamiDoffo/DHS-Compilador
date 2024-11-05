@@ -40,6 +40,7 @@ WHILE: 'while';
 FOR: 'for';
 IF: 'if';
 ELSE: 'else';
+RETURN: 'return';
 
 BOOLEANS: TRUE
         | FALSE
@@ -66,10 +67,14 @@ instruccion : declaracionPYC
             | iwhile
             | ifor
             | iif
-            | bloque
             | asignacionPYC
-            | funciones
+            | protofun
             | inic
+            | else
+            | returnfun PYC
+            | WS bloque //porque puede ser un bloque solo
+            | deffuncion
+            | llamadafun
             ;
 inic: tipoDatos asignacionNum PYC
       | tipoDatos asignacionBool PYC
@@ -95,7 +100,7 @@ asignacion : asignacionNum
 ifor : FOR PA init PYC cond PYC iter PC bloque;
 init : asignacionNum;
 
-exp: term expPrima ;
+exp: term expPrima;
 
 expPrima: SUMA exp
         | RESTA exp
@@ -110,24 +115,26 @@ t    : MULT factor t
     ;
 factor: NUMERO
       | ID
+      | funcion
       ;
 
-iwhile : WHILE PA cond PC instruccion;
+iwhile : WHILE PA cond PC bloque;
 
-bloque : LLA instrucciones LLC;
+bloque : LLA instrucciones LLC
+       | instruccion
+       ;
 
 comps: MEN
       | MAY
       | MENI
       | MAYI
-      |
+      | IGUAL
       ;
 bools: OR factorBool bools
       | AND factorBool bools
       |
       ;
-factorBool: ID
-          | TRUE
+factorBool: TRUE
           | FALSE
           ;
 asignacionBool : ID ASIG opbool;
@@ -144,20 +151,30 @@ iteracion: SUMA NUMERO
           | MULT NUMERO
           | DIV NUMERO
           ;
-iif: IF PA cond PC bloque;
-else: ELSE eelse;
-eelse: iif
-     | bloque
-     ; 
+iif: IF PA cond PC bloque
+   | IF PA cond PC bloque else;
+else: ELSE bloque;
 
-funciones: tipoDatos ID PA argumentos PC
-          | VOID ID PA argumentos PC
+fexp: ID PA parametros PC;
+parametros: parametro para
+          |
           ;
-
+para: COMA parametros;
+parametro: ID;
+funcion: ID PA argumentos PC;
+return: tipoDatos
+      | VOID
+      ;
+returnfun: RETURN exp
+         | RETURN VOID
+         ;
+protofun: return funcion PYC;
+deffuncion: return funcion LLA instrucciones LLC;
+llamadafun: funcion;
 argumentos: argumento arg
           |
           ;
 arg : COMA argumentos
     |
     ;
-argumento: tipoDatos ID;
+argumento: declaracion;

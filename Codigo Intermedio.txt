@@ -73,5 +73,32 @@ pop x // saca t1 de la pila y lo asigna a x (x = t1)
 <...>
 
 
+------------------------------------------------
+OPTIMIZACION CODFIGO INTEMEDIOS
+------------------------------------------------
 
-PARA EL FINAL HAY QUE TENERLO
+clang++ -01 -std=c++17 nombreArchivo.cpp //primer nivel de optimizacion (-01)
+g++ -02 -std=c++17 nombreArchivo.cpp //segundo nivel de optimizacion (-02)
+
+buscar:
+operaciones repetidas
+propagacion de constantes
+
+x = (a * b - c) + (a * b + d)
+t0 = a * b
+t1 = t0 - c
+t2 = a * b 
+t3 = t2 + d
+t4 = t1 + t3
+x = t4
+
+Optimizacion(reemplazo var repetidas):
+
+x = (a * b - c) + (a * b + d)
+t0 = a * b
+t1 = t0 - c 
+t3 = t0 + d
+t4 = t1 + t3
+x = t4
+
+PARA EL FINAL HAY QUE TENERLO!!!!!!!!!!!!!!!!!!!!!!!!!!!
