@@ -6,10 +6,10 @@ import re
 # mientras se va creando el arbol, avanza
 # para analisis semantico
 
-# TODO no se estan agregando las cosas al contexto actual (p.e.: declaracion)
-# TODO hacer que las otras funciones que tienen bloque se imprima el contexto como en WHILE
-# TODO todavia no anda usar una funcion en expresion aritmetica
-# TODO imprimir numeros de linea
+# TODO 1 no se estan agregando las cosas al contexto actual (p.e.: declaracion)
+# TODO 2 hacer que las otras funciones que tienen bloque se imprima el contexto como en WHILE
+# TODO 3 todavia no anda usar una funcion en expresion aritmetica
+# TODO 4 imprimir numeros de linea
 
 class Escucha (compiladoresListener) :
     numTokens = 0 #tokens son las hojas
@@ -32,9 +32,10 @@ class Escucha (compiladoresListener) :
     
     def enterIwhile(self, ctx:compiladoresParser.IwhileContext):
         print("\t\tEnter WHILE")
+        self.tabla.add_contexto("WHILE")
         
     def exitIwhile(self, ctx: compiladoresParser.IwhileContext):
-        print(self.tabla.add_contexto("WHILE").__str__())
+        print(self.tabla.__str__())
         print("\t\tFIN WHILE")
         
         # print("\tCantidad de hijos: " + str(ctx.getChildCount()))
@@ -49,7 +50,8 @@ class Escucha (compiladoresListener) :
         # se solucionadoria con if anidado y llamando al buscar por separado en cada caso
         nombreVariable = ctx.getChild(1).getText()
         tipoDeDato = ctx.getChild(0).getText()
-
+        linea = ctx.start.line  
+        
         variable = ID(nombreVariable, tipoDeDato)
         
         #Las busquedas si devuelven None es porque encontraron algo
@@ -60,20 +62,20 @@ class Escucha (compiladoresListener) :
             if busquedaGlobal is None:
             #print('"'+nombreVariable+'"'+" no fue declarada previamente")
                 self.tabla.add_identificador(variable)
-                print("\033[1;32m" +"Nombre variable: " + nombreVariable+ " es declarada en el contexto actual"+"\033[0m")
+                print("\033[1;32m" + f"Línea {linea}: Nombre variable '{nombreVariable}' es declarada en el contexto actual." + "\033[0m")
             else:
                 self.tabla.add_identificador(variable)
-                print("\033[1;33m" +"Advertencia: La variable: " + nombreVariable+ "es redeclarada en el contexto actual"+"\033[0m")
+                print("\033[1;33m" + f"Línea {linea}: Advertencia: La variable '{nombreVariable}' es redeclarada en el contexto actual." + "\033[0m")
         else:
-            print("\033[1;31m" + f"ERROR SEMANTICO: La variable '{nombreVariable}' fue declarada previamente en el contexto local."+ "\033[0m")
+            print("\033[1;31m" + f"Línea {linea}: ERROR SEMÁNTICO: La variable '{nombreVariable}' fue declarada previamente en el contexto local." + "\033[0m")
             return
         
         
     def enterIfor(self, ctx: compiladoresParser.IforContext):
         print("\t\tEnter FOR")
+        self.tabla.add_contexto("FOR")
         
     def exitIfor(self, ctx: compiladoresParser.IforContext):
-        self.tabla.add_contexto("FOR")
         print("\t\tFIN FOR")
         # print("\tCantidad de hijos: " + str(ctx.getChildCount()))
         # print("\tTokens: " + ctx.getText())
@@ -81,9 +83,9 @@ class Escucha (compiladoresListener) :
         
     def enterIif(self, ctx: compiladoresParser.IifContext):
         print("\t\tENTER IF")
+        self.tabla.add_contexto("IF")
     
     def exitIif(self, ctx: compiladoresParser.IifContext):
-        self.tabla.add_contexto("IF")
         print(ctx.IF.getText())
         print("\t\tEXIT IF")
         # print("\tCantidad de hijos: " + str(ctx.getChildCount()))
@@ -92,9 +94,9 @@ class Escucha (compiladoresListener) :
         
     def enterElse(self, ctx: compiladoresParser.ElseContext):
         print("\t\tENTER ELSE")
+        self.tabla.add_contexto("ELSE")
     
     def exitElse(self, ctx: compiladoresParser.ElseContext):
-        self.tabla.add_contexto("ELSE")
         print("\t\tEXIT del ELSE")
         # print("\tCantidad de hijos: " + str(ctx.getChildCount()))
         # print("\tTokens: " + ctx.getText())
@@ -106,21 +108,23 @@ class Escucha (compiladoresListener) :
     def exitProtofun(self, ctx: compiladoresParser.ProtofunContext):
         #Se agregan () para diferenciar de las variables y por si una funcion y una variable se llaman igual
         nombreFuncion= ctx.getChild(1).getText()
+        linea = ctx.start.line  
         funcion = ID(nombreFuncion, ctx.getChild(0).getText())
         busquedaLocal = self.tabla.buscar_local(nombreFuncion)
         busquedaGlobal = self.tabla.buscar_global(nombreFuncion)
         if busquedaLocal is None and busquedaGlobal is None:
-            print("\033[1;32m" +f"Se inicializó la variable '{nombreFuncion}' en el contexto actual."+ "\033[0m")
+            print("\033[1;32m" + f"Línea {linea}: La función '{nombreFuncion}' se inicializó en el contexto actual." + "\033[0m")
             funcion.set_inicializado()  # Marcar como inicializada
             self.tabla.add_identificador(funcion)
         elif busquedaLocal is not None:
-            print("\033[1;31m" +"ERROR SEMANTICO: La variable '" + nombreFuncion + "' ya está declarada"+ "\033[0m")
+            print("\033[1;31m" + f"Línea {linea}: ERROR SEMANTICO: La función '{nombreFuncion}' ya está declarada en el contexto local." + "\033[0m")
         elif busquedaGlobal is not None:
-            print("\033[1;31m" + "ERROR SEMANTICO: La variable '" + nombreFuncion + "' ya está declarada"+ "\033[0m")
+            print("\033[1;31m" + f"Línea {linea}: ERROR SEMANTICO: La función '{nombreFuncion}' ya está declarada en el contexto global." + "\033[0m")
         print("\t" + ctx.getText()) 
         
     def exitInic(self, ctx):
         nombreVariable = ctx.getChild(1).getText()
+        linea = ctx.start.line  
         # Si el nombre de la variable contiene un '=', extraemos solo el nombre
         if '=' in nombreVariable:
             nombreVariable = nombreVariable.split('=')[0].strip()
@@ -133,16 +137,17 @@ class Escucha (compiladoresListener) :
 
         # Si la variable no existe en ningún contexto, la inicializamos y agregamos
         if busquedaLocal is None and busquedaGlobal is None:
-            print("\033[1;32m" +f"Se inicializó la variable '{nombreVariable}' en el contexto actual."+ "\033[0m")
+            print("\033[1;32m" + f"Línea {linea}: La variable '{nombreVariable}' se inicializó en el contexto actual." + "\033[0m")
             variable.set_inicializado()  # Marcar como inicializada
             self.tabla.add_identificador(variable)
         elif busquedaLocal is not None:
-            print("\033[1;31m" +"ERROR SEMANTICO: La variable '" + nombreVariable + "' ya está declarada en el contexto local."+ "\033[0m")
+            print("\033[1;31m" + f"Línea {linea}: ERROR SEMANTICO: La variable '{nombreVariable}' ya está declarada en el contexto local." + "\033[0m")
         elif busquedaGlobal is not None:
-            print("\033[1;31m" + "ERROR SEMANTICO: La variable '" + nombreVariable + "' ya está declarada en el contexto global."+ "\033[0m")
+            print("\033[1;31m" + f"Línea {linea}: ERROR SEMANTICO: La variable '{nombreVariable}' ya está declarada en el contexto global." + "\033[0m")
 
     def exitAsignacion(self, ctx):
         operacion = ctx.getChild(0).getText()
+        linea = ctx.start.line  
         # Verificar si el nombre de la variable de la izquierda contiene un '='
         if '=' in operacion:
             nombreVariableIzquierda = operacion.split('=')[0].strip()
@@ -153,7 +158,7 @@ class Escucha (compiladoresListener) :
 
             # Asegurarse de que la variable izquierda está declarada
             if busquedaLocalIzquierda is None and busquedaGlobalIzquierda is None:
-                print("\033[1;31m" + f"ERROR SEMANTICO: La variable '{nombreVariableIzquierda}' no fue declarada previamente."+ "\033[0m")
+                print("\033[1;31m" + f"Línea {linea}: ERROR SEMANTICO: La variable '{nombreVariableIzquierda}' no fue declarada previamente." + "\033[0m")
                 return
             
             # Obtener el tipo de la variable izquierda
@@ -177,7 +182,7 @@ class Escucha (compiladoresListener) :
 
                     # Verificar que la variable esté declarada
                     if busquedaLocalDerecha is None and busquedaGlobalDerecha is None:
-                        print("\033[1;31m" + f"ERROR SEMANTICO: La variable '{termino}' no fue declarada previamente!"+ "\033[0m")
+                        print("\033[1;31m" + f"Línea {linea}: ERROR SEMANTICO: La variable '{termino}' no fue declarada previamente." + "\033[0m")
                         return
 
                     # Obtener el tipo de la variable derecha
@@ -185,7 +190,7 @@ class Escucha (compiladoresListener) :
 
                     # Verificar compatibilidad de tipos
                     if tipoIzquierda != tipoDerecha:
-                        print("\033[1;33m" + f"Advertencia: No se puede asignar un valor de tipo '{tipoDerecha}' a una variable de tipo '{tipoIzquierda}'."+ "\033[0m")
+                        print("\033[1;33m" + f"Línea {linea}: Advertencia: No se puede asignar un valor de tipo '{tipoDerecha}' a una variable de tipo '{tipoIzquierda}'." + "\033[0m")
                         return
                     
                     # Marcar la variable como usada
@@ -195,11 +200,11 @@ class Escucha (compiladoresListener) :
                         busquedaGlobalDerecha.set_usado()
                 else:
                     # Error si no es un número ni una variable válida
-                    print("\033[1;31m" + f"ERROR SEMANTICO: El término '{termino}' no es válido en la expresión de asignación."+ "\033[0m")
+                    print("\033[1;31m" + f"Línea {linea}: ERROR SEMANTICO: El término '{termino}' no es válido en la expresión de asignación." + "\033[0m")
                     return
 
             # Si todos los términos son válidos, proceder con la asignación
-            print("\033[1;32m" + f"Asignación válida: '{nombreVariableIzquierda}' = '{expresionDerecha}'."+ "\033[0m")
+            print("\033[1;32m" + f"Línea {linea}: Asignación válida: '{nombreVariableIzquierda}' = '{expresionDerecha}'." + "\033[0m")
             
             # Marcar la variable izquierda como usada
             if busquedaLocalIzquierda is not None:
