@@ -53,6 +53,15 @@ class compiladoresListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by compiladoresParser#bloqueSolo.
+    def enterBloqueSolo(self, ctx:compiladoresParser.BloqueSoloContext):
+        pass
+
+    # Exit a parse tree produced by compiladoresParser#bloqueSolo.
+    def exitBloqueSolo(self, ctx:compiladoresParser.BloqueSoloContext):
+        pass
+
+
     # Enter a parse tree produced by compiladoresParser#inic.
     def enterInic(self, ctx:compiladoresParser.InicContext):
         pass
@@ -176,6 +185,33 @@ class compiladoresListener(ParseTreeListener):
 
     # Exit a parse tree produced by compiladoresParser#factor.
     def exitFactor(self, ctx:compiladoresParser.FactorContext):
+        pass
+
+
+    # Enter a parse tree produced by compiladoresParser#funcionVar.
+    def enterFuncionVar(self, ctx:compiladoresParser.FuncionVarContext):
+        pass
+
+    # Exit a parse tree produced by compiladoresParser#funcionVar.
+    def exitFuncionVar(self, ctx:compiladoresParser.FuncionVarContext):
+        pass
+
+
+    # Enter a parse tree produced by compiladoresParser#ids.
+    def enterIds(self, ctx:compiladoresParser.IdsContext):
+        pass
+
+    # Exit a parse tree produced by compiladoresParser#ids.
+    def exitIds(self, ctx:compiladoresParser.IdsContext):
+        pass
+
+
+    # Enter a parse tree produced by compiladoresParser#iden.
+    def enterIden(self, ctx:compiladoresParser.IdenContext):
+        pass
+
+    # Exit a parse tree produced by compiladoresParser#iden.
+    def exitIden(self, ctx:compiladoresParser.IdenContext):
         pass
 
 

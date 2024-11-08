@@ -39,7 +39,7 @@ class Contexto:
         # Crear una representación en cadena para todos los IDs en el contexto
         ids_repr = ""
         if self.ids == dict():
-            ids_repr = "Contexto vacio."
+            ids_repr = "5"
         else:
             for id in self.ids.values():
                 ids_repr += id.__str__() + "\n"

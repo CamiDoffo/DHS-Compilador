@@ -72,10 +72,11 @@ instruccion : declaracionPYC
             | inic
             | else
             | returnfun PYC
-            | WS bloque //porque puede ser un bloque solo
+            | bloqueSolo //porque puede ser un bloque solo
             | deffuncion
             | llamadafun
             ;
+bloqueSolo : LLA instrucciones LLC;
 inic: tipoDatos asignacionNum PYC
       | tipoDatos asignacionBool PYC
       ;
@@ -115,7 +116,14 @@ t    : MULT factor t
     ;
 factor: NUMERO
       | ID
-      | funcion
+      | funcionVar
+      ;
+funcionVar: ID PA ids PC;
+ids: ID iden
+   |
+   ;
+iden : COMA iden
+      | 
       ;
 
 iwhile : WHILE PA cond PC bloque;
