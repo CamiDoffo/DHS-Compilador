@@ -19,7 +19,10 @@ class ID:
     def __str__(self):
         return "ID: "+self.tipoDato+" "+self.nombre+": Inicializado? "+str(self.inicializado)+", Usado? "+str(self.usado)
     
-    
+class Funcion(ID): #Estaba viendo de agregar para guardar los argumentos pero nose
+    def __init__(self,nombre,tipoDato,inicializado,usado,args):
+        super.__init__(nombre,tipoDato,inicializado,usado)
+        self.args=args
             
 class Contexto:
     """

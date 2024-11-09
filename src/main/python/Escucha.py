@@ -120,13 +120,13 @@ class Escucha (compiladoresListener) :
         
     def exitProtofun(self, ctx: compiladoresParser.ProtofunContext):
         #Se agregan () para diferenciar de las variables y por si una funcion y una variable se llaman igual
-        nombreFuncion= ctx.getChild(1).getText()
+        nombreFuncion= ctx.getChild(1).getText().split('(')[0].strip() #Guarde solo lo que estaba antes del parentesis porque sino guardaba todo el choclo y despues no coincidia
         linea = ctx.start.line  
-        funcion = ID(nombreFuncion, ctx.getChild(0).getText())
+        funcion = ID(nombreFuncion, ctx.getChild(0).getText()) #Aca habria que ver de usar la clase Funcion maybe
         busquedaLocal = self.tabla.buscar_local(nombreFuncion)
         busquedaGlobal = self.tabla.buscar_global(nombreFuncion)
         if busquedaLocal is None and busquedaGlobal is None:
-            print("\033[1;32m" + f"Línea {linea}: La función '{nombreFuncion}' se inicializó en el contexto actual." + "\033[0m")
+            print("\033[1;32m" + f"Línea {linea}: La función '{nombreFuncion}' se declaro en el contexto actual." + "\033[0m")
             funcion.set_inicializado()  # Marcar como inicializada
             self.tabla.add_identificador(funcion)
         elif busquedaLocal is not None:
@@ -188,7 +188,10 @@ class Escucha (compiladoresListener) :
                 elif termino.isdigit():
                     # Si es un número, continuar
                     continue
-                elif termino.isidentifier():  # Verificar si es un identificador (variable)
+                elif termino.isidentifier() or (re.search(r'[()]', termino)):  # Verificar si es un identificador (variable) o una funcion
+                    
+                    if(re.search(r'[()]', termino)): 
+                        termino= re.sub(r'\(.*?\)', '', termino) #Si es una funcion le quita los parentesis y el contenido
                     # Buscar la variable en el contexto
                     busquedaLocalDerecha = self.tabla.buscar_local(termino)
                     busquedaGlobalDerecha = self.tabla.buscar_global(termino)
