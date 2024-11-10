@@ -1,6 +1,7 @@
 # usar esto usando singleton (?
 
 class ID:
+    args = []
     def __init__(self, nombre, tipoDato, inicializado=False, usado=False, declarado=True):
         self.nombre = nombre
         self.tipoDato = tipoDato
@@ -15,14 +16,12 @@ class ID:
     
     def set_usado(self):
         self.usado = True
+
+    def set_args(self, args):
+        self.args = args
     
     def __str__(self):
         return "ID: "+self.tipoDato+" "+self.nombre+": Inicializado? "+str(self.inicializado)+", Usado? "+str(self.usado)
-    
-class Funcion(ID): #Estaba viendo de agregar para guardar los argumentos pero nose
-    def __init__(self,nombre,tipoDato,inicializado,usado,args):
-        super.__init__(nombre,tipoDato,inicializado,usado)
-        self.args=args
             
 class Contexto:
     """

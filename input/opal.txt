@@ -6,5 +6,5 @@ while(x<0)
 else
     while(x<10)
         y=1;
-int xy(int b);
-y= 2+xy(a);
+int xy(int b, int c);
+y= 2+xy(a,x);

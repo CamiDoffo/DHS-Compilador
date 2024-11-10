@@ -95,6 +95,7 @@ asignacionPYC: asignacion PYC;
 
 asignacion : asignacionNum
             | asignacionBool
+            | funcionVar
             ;
 
 
@@ -122,8 +123,8 @@ funcionVar: ID PA ids PC;
 ids: ID iden
    |
    ;
-iden : COMA iden
-      | 
+iden : COMA ids
+      |
       ;
 
 iwhile : WHILE PA cond PC bloque;

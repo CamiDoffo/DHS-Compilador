@@ -3,6 +3,7 @@ from  compiladoresListener import compiladoresListener
 from compiladoresParser import compiladoresParser
 from Squeleton import *
 import re
+import inspect
 # mientras se va creando el arbol, avanza
 # para analisis semantico
 
@@ -114,15 +115,35 @@ class Escucha (compiladoresListener) :
         print(self.tabla.contextos[-1].__str__())
         print("\t\tEXIT BLOQUE")
         self.tabla.del_Contexto()
-        
+
+    def exitFuncionVar(self, ctx):
+        nombreFuncion= ctx.getChild(0).getText().split('(')[0].strip() #Guarde solo lo que estaba antes del parentesis porque sino guardaba todo el choclo y despues no coincidia
+        linea = ctx.start.line
+        args = ctx.getChild(2).getText().split(',')   
+        print(f"argumento:  {args}")
+        """
+        busquedaLocal = self.tabla.buscar_local(nombreFuncion)
+        busquedaGlobal = self.tabla.buscar_global(nombreFuncion)
+
+        if busquedaGlobal is not None:
+            for arg in args:
+                if arg.isdigit():
+                    for argumento in busquedaGlobal.args:
+                        if (arg.type() == )
+        """
     def enterProtofun(self, ctx: compiladoresParser.ProtofunContext):
         print("\t\tPROTOTIPO FUNCION")
         
     def exitProtofun(self, ctx: compiladoresParser.ProtofunContext):
         #Se agregan () para diferenciar de las variables y por si una funcion y una variable se llaman igual
         nombreFuncion= ctx.getChild(1).getText().split('(')[0].strip() #Guarde solo lo que estaba antes del parentesis porque sino guardaba todo el choclo y despues no coincidia
-        linea = ctx.start.line  
+        linea = ctx.start.line
+        args = [re.match(r'^(int|float|double|bool)+', tipo.strip()).group(0) for tipo in ctx.getChild(1).getChild(2).getText().split(',')]
+        # = [re.match(r'^[a-zA-Z]+', tipo.strip()).group(0) for tipo in ctx.getChild(1).getChild(2).getText().split(',')]
+        print(f"argumento:  {args}")
         funcion = ID(nombreFuncion, ctx.getChild(0).getText()) #Aca habria que ver de usar la clase Funcion maybe
+        funcion.set_args(args) #guardo los argumentos en una lista ["int a", "int b"]
+        print(funcion.args)
         busquedaLocal = self.tabla.buscar_local(nombreFuncion)
         busquedaGlobal = self.tabla.buscar_global(nombreFuncion)
         if busquedaLocal is None and busquedaGlobal is None:
