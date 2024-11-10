@@ -95,7 +95,6 @@ asignacionPYC: asignacion PYC;
 
 asignacion : asignacionNum
             | asignacionBool
-            | funcionVar
             ;
 
 
@@ -120,7 +119,7 @@ factor: NUMERO
       | funcionVar
       ;
 funcionVar: ID PA ids PC;
-ids: ID iden
+ids: (ID | NUMERO | BOOLEANS ) iden
    |
    ;
 iden : COMA ids

@@ -104,7 +104,7 @@ class TablaSimbolos:
         contexto_actual = self.contextos[-1]
         return contexto_actual.ids.get(nombre)
             
-    def buscar_global(self, nombre):
+    def buscar_global(self, nombre) -> ID:
         """
         Busca el contexto globalmente (para cosas anidadas)
         """

@@ -7,7 +7,6 @@ import inspect
 # mientras se va creando el arbol, avanza
 # para analisis semantico
 
-# TODO 3 todavia no anda usar una funcion en expresion aritmetica
 # TODO 1 analizar si declarar los argumentos de una funcion globalmente esta bien o no
 # TODO 2 ver como del prototipo de funcion separar los argumentos
 #       pista: en protofun ctx.getChild(1).getChild(2).getText() ==> 'int b '
@@ -40,7 +39,7 @@ class Escucha (compiladoresListener) :
         print("\t\tFIN WHILE")
         
         # print("\tCantidad de hijos: " + str(ctx.getChildCount()))
-        print("\tTokens: " + ctx.getText())
+        print("\t" + ctx.getText())
         
         self.tabla.del_Contexto()
         
@@ -81,7 +80,7 @@ class Escucha (compiladoresListener) :
         print(self.tabla.contextos[-1].__str__())
         print("\t\tFIN FOR")
         # print("\tCantidad de hijos: " + str(ctx.getChildCount()))
-        # print("\tTokens: " + ctx.getText())
+        print("\t" + ctx.getText())
         self.tabla.del_Contexto()
         
     def enterIif(self, ctx: compiladoresParser.IifContext):
@@ -117,20 +116,23 @@ class Escucha (compiladoresListener) :
         self.tabla.del_Contexto()
 
     def exitFuncionVar(self, ctx):
-        nombreFuncion= ctx.getChild(0).getText().split('(')[0].strip() #Guarde solo lo que estaba antes del parentesis porque sino guardaba todo el choclo y despues no coincidia
+        nombreFuncion= ctx.getChild(0).getText().split('(')[0].strip() 
+        #Guarde solo lo que estaba antes del parentesis porque sino guardaba todo el choclo y despues no coincidia
         linea = ctx.start.line
-        args = ctx.getChild(2).getText().split(',')   
+        args = ctx.getChild(2).getText().split(',')
         print(f"argumento:  {args}")
-        """
-        busquedaLocal = self.tabla.buscar_local(nombreFuncion)
         busquedaGlobal = self.tabla.buscar_global(nombreFuncion)
 
         if busquedaGlobal is not None:
-            for arg in args:
-                if arg.isdigit():
-                    for argumento in busquedaGlobal.args:
-                        if (arg.type() == )
-        """
+            for i in range(len(args)):
+                busquedaGlobalArgs = self.tabla.buscar_global(args[i])
+                if (busquedaGlobalArgs is not None and busquedaGlobalArgs.get_tipoDato() != busquedaGlobal.args[i]):
+                    print("\033[1;31m"+ "ERROR SEMANTICO: Los tipos de datos ("+ busquedaGlobalArgs.nombre+") ingresados no coinciden!"+ "\033[0m")
+            if len(args) != len(busquedaGlobal.args):
+                print("\033[1;31m"+ "ERROR SEMANTICO: La cantidad de datos ingresados no coinciden!"+ "\033[0m")
+    
+                            
+        
     def enterProtofun(self, ctx: compiladoresParser.ProtofunContext):
         print("\t\tPROTOTIPO FUNCION")
         
@@ -138,12 +140,14 @@ class Escucha (compiladoresListener) :
         #Se agregan () para diferenciar de las variables y por si una funcion y una variable se llaman igual
         nombreFuncion= ctx.getChild(1).getText().split('(')[0].strip() #Guarde solo lo que estaba antes del parentesis porque sino guardaba todo el choclo y despues no coincidia
         linea = ctx.start.line
-        args = [re.match(r'^(int|float|double|bool)+', tipo.strip()).group(0) for tipo in ctx.getChild(1).getChild(2).getText().split(',')]
-        # = [re.match(r'^[a-zA-Z]+', tipo.strip()).group(0) for tipo in ctx.getChild(1).getChild(2).getText().split(',')]
-        print(f"argumento:  {args}")
-        funcion = ID(nombreFuncion, ctx.getChild(0).getText()) #Aca habria que ver de usar la clase Funcion maybe
+        if ctx.getChild(1).getChild(2) is not None:
+            args = [re.match(r'^(int|float|double|bool|)+', tipo.strip()).group(0) for tipo in ctx.getChild(1).getChild(2).getText().split(',')]
+        else:
+            args=[]
+        funcion = ID(nombreFuncion, ctx.getChild(0).getText())
         funcion.set_args(args) #guardo los argumentos en una lista ["int a", "int b"]
-        print(funcion.args)
+        print(f"Argumentos:  {funcion.args}")
+        #print(funcion.args)    
         busquedaLocal = self.tabla.buscar_local(nombreFuncion)
         busquedaGlobal = self.tabla.buscar_global(nombreFuncion)
         if busquedaLocal is None and busquedaGlobal is None:
@@ -154,7 +158,7 @@ class Escucha (compiladoresListener) :
             print("\033[1;31m" + f"Línea {linea}: ERROR SEMANTICO: La función '{nombreFuncion}' ya está declarada en el contexto local." + "\033[0m")
         elif busquedaGlobal is not None:
             print("\033[1;31m" + f"Línea {linea}: ERROR SEMANTICO: La función '{nombreFuncion}' ya está declarada en el contexto global." + "\033[0m")
-        print("\t" + ctx.getText()) 
+        print("\t" + ctx.getText())
         
     def exitInic(self, ctx):
         nombreVariable = ctx.getChild(1).getText()
