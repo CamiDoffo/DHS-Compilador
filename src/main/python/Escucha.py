@@ -39,7 +39,7 @@ class Escucha (compiladoresListener) :
         print("\t\tFIN WHILE")
         
         # print("\tCantidad de hijos: " + str(ctx.getChildCount()))
-        print("\t" + ctx.getText())
+        # print("\t" + ctx.getText())
         
         self.tabla.del_Contexto()
         
@@ -80,7 +80,7 @@ class Escucha (compiladoresListener) :
         print(self.tabla.contextos[-1].__str__())
         print("\t\tFIN FOR")
         # print("\tCantidad de hijos: " + str(ctx.getChildCount()))
-        print("\t" + ctx.getText())
+        # print("\t" + ctx.getText())
         self.tabla.del_Contexto()
         
     def enterIif(self, ctx: compiladoresParser.IifContext):
@@ -127,9 +127,9 @@ class Escucha (compiladoresListener) :
             for i in range(len(args)):
                 busquedaGlobalArgs = self.tabla.buscar_global(args[i])
                 if (busquedaGlobalArgs is not None and busquedaGlobalArgs.get_tipoDato() != busquedaGlobal.args[i]):
-                    print("\033[1;31m"+ "ERROR SEMANTICO: Los tipos de datos ("+ busquedaGlobalArgs.nombre+") ingresados no coinciden!"+ "\033[0m")
+                    print("\033[1;31m"+ f"Línea {linea}: ERROR SEMANTICO: Los tipos de datos ("+ busquedaGlobalArgs.nombre+") ingresados no coinciden!"+ "\033[0m")
             if len(args) != len(busquedaGlobal.args):
-                print("\033[1;31m"+ "ERROR SEMANTICO: La cantidad de datos ingresados no coinciden!"+ "\033[0m")
+                print("\033[1;31m"+ f"Línea {linea}: ERROR SEMANTICO: La cantidad de datos ingresados no coinciden!"+ "\033[0m")
     
                             
         

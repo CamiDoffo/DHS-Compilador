@@ -8,5 +8,5 @@ while(x<0)
 else
     while(x<10)
         y=1;
-int xy(int ad, int b);
-y= 2+xy(52);
+int xy(int argA, int argB);
+y= 2+xy(52, a);

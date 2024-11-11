@@ -41,7 +41,7 @@ class Contexto:
         # Crear una representación en cadena para todos los IDs en el contexto
         ids_repr = ""
         if self.ids == dict():
-            ids_repr = "5"
+            ids_repr = "Sin contexto."
         else:
             for id in self.ids.values():
                 ids_repr += id.__str__() + "\n"
