@@ -163,6 +163,11 @@ class Escucha (compiladoresListener) :
     def exitInic(self, ctx):
         nombreVariable = ctx.getChild(1).getText()
         linea = ctx.start.line  
+        # Verificar que la declaración termine con ';'
+        if not ctx.getText().endswith(";"):
+            print("\033[1;31m" + f"Línea {linea}: ERROR SINTACTICO: La declaración debe terminar con ';'." + "\033[0m")
+            return
+        
         # Si el nombre de la variable contiene un '=', extraemos solo el nombre
         if '=' in nombreVariable:
             nombreVariable = nombreVariable.split('=')[0].strip()
