@@ -7,10 +7,6 @@ import inspect
 # mientras se va creando el arbol, avanza
 # para analisis semantico
 
-# TODO 1 analizar si declarar los argumentos de una funcion globalmente esta bien o no
-# TODO 2 ver como del prototipo de funcion separar los argumentos
-#       pista: en protofun ctx.getChild(1).getChild(2).getText() ==> 'int b '
-
 class Escucha (compiladoresListener) :
     numTokens = 0 #tokens son las hojas
     numNodos = 0
