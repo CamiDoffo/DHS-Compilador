@@ -1,7 +1,8 @@
-# usar esto usando singleton (?
+from abc import abstractmethod, ABC
 
-class ID:
+class ID(ABC):
     args = []
+    @abstractmethod
     def __init__(self, nombre, tipoDato, inicializado=False, usado=False, declarado=True):
         self.nombre = nombre
         self.tipoDato = tipoDato
@@ -16,13 +17,22 @@ class ID:
     
     def set_usado(self):
         self.usado = True
-
-    def set_args(self, args):
-        self.args = args
     
     def __str__(self):
         return "ID: "+self.tipoDato+" "+self.nombre+": Inicializado? "+str(self.inicializado)+", Usado? "+str(self.usado)
-            
+
+class Variable(ID):
+    def __init__(self, nombre, tipoDato, inicializado=False, usado=False, declarado=True):
+        super().__init__(nombre, tipoDato, inicializado, usado, declarado)  
+
+class Funcion(ID):
+    args = []
+    def __init__(self, nombre, tipoDato, inicializado=False, usado=False, declarado=True):
+        super().__init__(nombre, tipoDato, inicializado, usado, declarado)
+
+    def set_args(self, args):
+        self.args = args  
+          
 class Contexto:
     """
     Contexto son las anidaciones

@@ -49,7 +49,7 @@ class Escucha (compiladoresListener) :
         tipoDeDato = ctx.getChild(0).getText()
         linea = ctx.start.line  
         
-        variable = ID(nombreVariable, tipoDeDato)
+        variable = Variable(nombreVariable, tipoDeDato)
         
         #Las busquedas si devuelven None es porque encontraron algo
         busquedaGlobal = self.tabla.buscar_global(nombreVariable)
@@ -124,9 +124,12 @@ class Escucha (compiladoresListener) :
                 busquedaGlobalArgs = self.tabla.buscar_global(args[i])
                 if (busquedaGlobalArgs is not None and busquedaGlobalArgs.get_tipoDato() != busquedaGlobal.args[i]):
                     print("\033[1;31m"+ f"Línea {linea}: ERROR SEMANTICO: Los tipos de datos ("+ busquedaGlobalArgs.nombre+") ingresados no coinciden!"+ "\033[0m")
+                    return
             if len(args) != len(busquedaGlobal.args):
                 print("\033[1;31m"+ f"Línea {linea}: ERROR SEMANTICO: La cantidad de datos ingresados no coinciden!"+ "\033[0m")
-    
+                return
+            else:#A CHEQUEAR
+                busquedaGlobal.set_usado()
                             
         
     def enterProtofun(self, ctx: compiladoresParser.ProtofunContext):
@@ -140,7 +143,7 @@ class Escucha (compiladoresListener) :
             args = [re.match(r'^(int|float|double|bool|)+', tipo.strip()).group(0) for tipo in ctx.getChild(1).getChild(2).getText().split(',')]
         else:
             args=[]
-        funcion = ID(nombreFuncion, ctx.getChild(0).getText())
+        funcion = Funcion(nombreFuncion, ctx.getChild(0).getText())
         funcion.set_args(args) #guardo los argumentos en una lista ["int a", "int b"]
         print(f"Argumentos:  {funcion.args}")
         #print(funcion.args)    
@@ -172,7 +175,7 @@ class Escucha (compiladoresListener) :
         busquedaLocal = self.tabla.buscar_local(nombreVariable)
         busquedaGlobal = self.tabla.buscar_global(nombreVariable)
         tipoDeDato = ctx.getChild(0).getText()
-        variable = ID(nombreVariable, tipoDeDato)
+        variable = Variable(nombreVariable, tipoDeDato)
 
         # Si la variable no existe en ningún contexto, la inicializamos y agregamos
         if busquedaLocal is None and busquedaGlobal is None:

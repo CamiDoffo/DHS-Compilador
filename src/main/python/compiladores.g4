@@ -70,7 +70,6 @@ instruccion : declaracionPYC
             | asignacionPYC
             | protofun
             | inic
-            | else
             | returnfun PYC
             | bloqueSolo //porque puede ser un bloque solo
             | deffuncion
@@ -185,4 +184,4 @@ argumentos: argumento arg
 arg : COMA argumentos
     |
     ;
-argumento: declaracion;
+argumento: tipoDatos ID;
