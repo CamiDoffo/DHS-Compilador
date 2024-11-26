@@ -112,7 +112,7 @@ class Escucha (compiladoresListener) :
         self.tabla.del_Contexto()
 
     def exitFuncionVar(self, ctx):
-        nombreFuncion= ctx.getChild(0).getText().split('(')[0].strip() 
+        nombreFuncion = ctx.getChild(0).getText().split('(')[0].strip() 
         #Guarde solo lo que estaba antes del parentesis porque sino guardaba todo el choclo y despues no coincidia
         linea = ctx.start.line
         args = ctx.getChild(2).getText().split(',')
@@ -128,8 +128,7 @@ class Escucha (compiladoresListener) :
             if len(args) != len(busquedaGlobal.args):
                 print("\033[1;31m"+ f"Línea {linea}: ERROR SEMANTICO: La cantidad de datos ingresados no coinciden!"+ "\033[0m")
                 return
-            else:#A CHEQUEAR
-                busquedaGlobal.set_usado()
+            # no la marcamos como usada porque se encarga la asignacion
                             
         
     def enterProtofun(self, ctx: compiladoresParser.ProtofunContext):
@@ -229,7 +228,12 @@ class Escucha (compiladoresListener) :
                     if busquedaLocalDerecha is None and busquedaGlobalDerecha is None:
                         print("\033[1;31m" + f"Línea {linea}: ERROR SEMANTICO: La variable '{termino}' no fue declarada previamente." + "\033[0m")
                         return
-
+                    else:
+                        # Marcar la variable como usada
+                        if busquedaLocalDerecha is not None:
+                            busquedaLocalDerecha.set_usado()
+                        else:
+                            busquedaGlobalDerecha.set_usado()
                     # Obtener el tipo de la variable derecha
                     tipoDerecha = (busquedaLocalDerecha.tipoDato if busquedaLocalDerecha else busquedaGlobalDerecha.tipoDato)
 
@@ -238,11 +242,6 @@ class Escucha (compiladoresListener) :
                         print("\033[1;33m" + f"Línea {linea}: Advertencia: No se puede asignar un valor de tipo '{tipoDerecha}' a una variable de tipo '{tipoIzquierda}'." + "\033[0m")
                         return
                     
-                    # Marcar la variable como usada
-                    if busquedaLocalDerecha:
-                        busquedaLocalDerecha.set_usado()
-                    else:
-                        busquedaGlobalDerecha.set_usado()
                 else:
                     # Error si no es un número ni una variable válida
                     print("\033[1;31m" + f"Línea {linea}: ERROR SEMANTICO: El término '{termino}' no es válido en la expresión de asignación." + "\033[0m")
@@ -251,11 +250,6 @@ class Escucha (compiladoresListener) :
             # Si todos los términos son válidos, proceder con la asignación
             print("\033[1;32m" + f"Línea {linea}: Asignación válida: '{nombreVariableIzquierda}' = '{expresionDerecha}'." + "\033[0m")
             
-            # Marcar la variable izquierda como usada
-            if busquedaLocalIzquierda is not None:
-                busquedaLocalIzquierda.set_usado()
-            else:
-                busquedaGlobalIzquierda.set_usado()
 
     def enterDeffuncion(self, ctx:compiladoresParser.DeffuncionContext):
         print("\t\tENTER FUNCION")
