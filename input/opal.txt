@@ -13,4 +13,4 @@ if(i==1){
     d=2+a;
 }
 int xy(bool argA, int argB);
-y= 2+xy(52, a);
+y=2+xy(52, a);

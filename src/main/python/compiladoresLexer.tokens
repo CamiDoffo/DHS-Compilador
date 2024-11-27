@@ -55,8 +55,8 @@ OTRO=37
 '<='=18
 '||'=19
 '&&'=20
-'true'=21
-'false'=22
+'TRUE'=21
+'FALSE'=22
 'int'=24
 'bool'=25
 'float'=26

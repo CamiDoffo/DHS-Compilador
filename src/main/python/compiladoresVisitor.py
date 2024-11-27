@@ -189,26 +189,6 @@ class compiladoresVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by compiladoresParser#fexp.
-    def visitFexp(self, ctx:compiladoresParser.FexpContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by compiladoresParser#parametros.
-    def visitParametros(self, ctx:compiladoresParser.ParametrosContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by compiladoresParser#para.
-    def visitPara(self, ctx:compiladoresParser.ParaContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by compiladoresParser#parametro.
-    def visitParametro(self, ctx:compiladoresParser.ParametroContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by compiladoresParser#funcion.
     def visitFuncion(self, ctx:compiladoresParser.FuncionContext):
         return self.visitChildren(ctx)
