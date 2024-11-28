@@ -157,7 +157,9 @@ iteracion: SUMA NUMERO
           ;
 iif: IF PA cond PC bloque
    | IF PA cond PC bloque else;
-else: ELSE bloque;
+else: ELSE bloque
+    | ELSE iif
+    ;
 
 funcion: ID PA argumentos PC;
 return: tipoDatos
