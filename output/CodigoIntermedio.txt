@@ -2,16 +2,20 @@ temp0 = 1
 x = temp0
 temp1 = 0
 a = temp1
-temp2 = TRUEc = temp2
+temp2 = TRUE
+c = temp2
 temp3 = 0
 d = temp3
 label label0
-temp4 = x < 0ifn temp4 jmp label1
+temp4 = x < 0
+ifn temp4 jmp label1
 jmp label0
 label label1
-temp5 = i == 1ifn temp5 jmp label2
+temp5 = i == 1
+ifn temp5 jmp label2
 label label3
-temp6 = x < 10ifn temp6 jmp label4
+temp6 = x < 10
+ifn temp6 jmp label4
 temp7 = 1
 y = temp7
 jmp label3

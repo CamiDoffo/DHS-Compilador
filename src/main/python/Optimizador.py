@@ -9,10 +9,11 @@ class Optimizador:
     dest = open("./output/CodigoIntermedioOptimizado.txt", "w")
 
     def optimizarCodigoIntermedio(self):
-        print('Comenzando optimizacion'.center(40, '*'))
+        print("=-"*20) # hace esto 20 veces
+        print('--- Comenzando optimizacion ---')
         self.separarVariables()
         self.reemplazar()
-        print('Optimizacion completada'.center(40, '*'))
+        print("\033[1;32m"+'--- Optimizacion completada ---'+"\033[0m")
 
     def separarVariables(self):
         self.src.seek(0)

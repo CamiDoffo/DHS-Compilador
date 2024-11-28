@@ -46,7 +46,7 @@ class Walker (compiladoresVisitor):
         
         self.visit(ctx.instrucciones())
         self.f.close()
-        print("--- Codigo intermedio generado ---")
+        print("\033[1;32m"+"--- Codigo intermedio generado ---"+"\033[0m")
         
     def visitInstrucciones(self, ctx:compiladoresParser.InstruccionesContext):
         self.visit(ctx.instruccion())
@@ -85,7 +85,10 @@ class Walker (compiladoresVisitor):
         return super().visitDeclaracion(ctx)
         
     def visitInic(self, ctx:compiladoresParser.InicContext):
-        self.visit(ctx.asignacion())
+        if ctx.asignacionNum():
+            self.visit(ctx.asignacionNum())
+        elif ctx.asignacionBool():
+            self.visit(ctx.asignacionBool())
         
     def visitLlamadafun(self, ctx:compiladoresParser.LlamadafunContext):
         return super().visitLlamadafun(ctx)
@@ -97,9 +100,6 @@ class Walker (compiladoresVisitor):
         self.visit(ctx.instrucciones())
     
     def visitAsignacion(self, ctx:compiladoresParser.AsignacionContext):
-        # ctx.getChild(0) va a ser la asignacion entera
-        # print("que hay aca?? "+ctx.getChild(0).getText())
-        # return super().visitAsignacion(ctx)
         if ctx.asignacionBool():
             self.visit(ctx.asignacionBool())
         elif ctx.asignacionNum():
@@ -146,11 +146,11 @@ class Walker (compiladoresVisitor):
     def visitFactorBool(self, ctx: compiladoresParser.FactorBoolContext):
         if ctx.TRUE():  # Si es `true`
             temporal = self.temps.next_temporal()
-            self.f.write(f'{temporal} = TRUE\n')  # Asigna 1 como verdadero
+            self.f.write(f'{temporal} = 1\n')  # Asigna 1 como verdadero
             self.temporales.append(temporal)
         elif ctx.FALSE():  # Si es `false`
             temporal = self.temps.next_temporal()
-            self.f.write(f'{temporal} = FALSE\n')  # Asigna 0 como falso
+            self.f.write(f'{temporal} = 0\n')  # Asigna 0 como falso
             self.temporales.append(temporal)    
     
     def visitAsignacionNum(self, ctx:compiladoresParser.AsignacionNumContext):
@@ -171,8 +171,7 @@ class Walker (compiladoresVisitor):
     
     def visitExp(self, ctx:compiladoresParser.ExpContext):
         self.visit(ctx.term())
-        if ctx.expPrima() is not None and ctx.expPrima().getText() != "":
-            print("que hay aca?? "+ ctx.expPrima().getText()+" hola?")
+        if ctx.expPrima().getText() != "":
             temporal = self.temps.next_temporal()
             self.temporales.append(temporal)
             derecha = self.temporales.pop()
@@ -211,20 +210,6 @@ class Walker (compiladoresVisitor):
             self.f.write(f'{temporal} = {izquierda} {operador} {derecha}\n')
             self.temporales.append(temporal)
             self.visit(ctx.t())
-                # if ctx.t():
-                #     operador = ctx.getChild(0).getText()
-                #     self.visit(ctx.t())
-                #     temporal = self.temps.next_temporal()
-                #     self.f.write(f'{temporal} = {self.temporales.pop()} {operador} {self.temporales.pop()}\n')
-                #     self.temporales.append(temporal)
-                #     self.visitFactor(ctx.getChild(1))
-            
-            # if ctx.getChild(2).getChildCount() != 0:
-            #     temporal = self.temps.next_temporal()
-            #     self.f.write(temporal + ' = ' + self.temporales.pop() + ' ' +
-            #                 ctx.getChild(2).getChild(0).getText() + ' ' +
-            #                 self.visitT(ctx.getChild(2)) + '\n')
-            #     self.temporales.append(temporal)
         
         return self.temporales[-1]
 
@@ -354,7 +339,7 @@ class Walker (compiladoresVisitor):
         
         # Generar un temporal para guardar el resultado de la comparación
         temp = self.temps.next_temporal()
-        self.f.write(f"{temp} = {left} {operator} {right}")
+        self.f.write(f"{temp} = {left} {operator} {right}\n")
         
         # Agregar el temporal a la pila
         self.temporales.append(temp)
@@ -363,7 +348,7 @@ class Walker (compiladoresVisitor):
         if ctx.factorBool():  # Es un valor booleano simple (TRUE/FALSE)
             bool_value = ctx.factorBool().getText()
             temp = self.temps.next_temporal()
-            self.f.write(f"{temp} = {bool_value}")
+            self.f.write(f"{temp} = {bool_value}\n")
             self.temporales.append(temp)
         elif ctx.bools():  # Es una operación booleana (AND, OR)
             self.visit(ctx.bools())

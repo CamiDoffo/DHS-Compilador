@@ -76,7 +76,8 @@ instruccion : declaracionPYC
             | llamadafun
             ;
 bloqueSolo : LLA instrucciones LLC;
-inic: tipoDatos asignacion PYC;
+inic: tipoDatos asignacionNum PYC
+    | tipoDatos asignacionBool PYC;
 declaracion : tipoDatos ID;
 tipoDatos: BOOL
           | INT

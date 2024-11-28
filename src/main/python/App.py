@@ -4,6 +4,7 @@ from compiladoresLexer  import compiladoresLexer
 from compiladoresParser import compiladoresParser
 from Escucha import Escucha
 from Walker import Walker
+from Optimizador import Optimizador
 
 def main(argv):
     archivo = "input/opal.txt"
@@ -17,8 +18,14 @@ def main(argv):
     parser.addParseListener(escucha)
     tree = parser.programa() #con el arbol vamos a crear el codigo intermedio
     # print(tree.toStringTree(recog=parser))
-    caminante = Walker()
-    caminante.visitPrograma(tree)
+    # si hay algun error, debera detenerse la ejecucion y no se construira el codigo intermedio
+    if not escucha.error:
+        caminante = Walker()
+        caminante.visit(tree)
+        optimizador = Optimizador()
+        optimizador.optimizarCodigoIntermedio()
+    else:
+        print("\033[1;31m"+"Ocurrio un error. No se genero codigo intermedio"+"\033[0m")
     
 
 if __name__ == '__main__':
