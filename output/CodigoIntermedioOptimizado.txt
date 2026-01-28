@@ -1,37 +1,35 @@
-temp0 = 1
-x = 1
-temp1 = 0
-a = 0
-temp2 = TRUE
-
-c = TRUE
-
-temp3 = 0
-d = 0
 label label0
-temp4 = 1 < 0
-jmp label0
-label label1
-temp5 = i == 1
-
+pop label1
+temp0 = n1
+temp1 = n2
+temp2 = temp0 + temp1
+push temp2
+jmp label1
+a = 10
+b = 20
+c = 50
+i = 0
+jmp label2
+x = 100
+label label2
 label label3
-temp6 = 1 < 10
-temp7 = 1
-y = 1
+temp16 = i < 5
+ifn temp16 jmp label4
+temp17 = i
+temp19 = temp17 + 1
+i = temp19
+y = 3.14
 jmp label3
 label label4
-jmp label5
-label label2
-temp8 = 2
-temp10 = 0
-temp11 = 2
-temp9 =  temp9 + temp11 + 2
-d = 1
-label label5
-temp12 = 2
-push label7
-jmp label6
-label label7
-temp14 = 3
-temp13 =  temp13 + temp14 + 3
-y = 0
+temp21 = a
+temp22 = b
+push temp21
+push temp22
+push label1
+jmp label0
+label label1
+pop temp23
+k = temp23
+temp24 = j
+temp26 = temp24 + 1
+c = temp26

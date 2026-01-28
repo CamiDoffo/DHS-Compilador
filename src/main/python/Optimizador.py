@@ -1,138 +1,121 @@
 import re
 
-
 class Optimizador:
-
-    variables = dict()
-    reemplazos = dict()
-    src = open("./output/CodigoIntermedio.txt", "r")
-    dest = open("./output/CodigoIntermedioOptimizado.txt", "w")
+    def __init__(self):
+        self.src = None
+        self.dest = None
+        self.variables = dict()
 
     def optimizarCodigoIntermedio(self):
-        print("=-"*20) # hace esto 20 veces
+        print("=-"*20)
         print('--- Comenzando optimizacion ---')
-        self.separarVariables()
-        self.reemplazar()
-        print("\033[1;32m"+'--- Optimizacion completada ---'+"\033[0m")
-
-    def separarVariables(self):
+        
         self.src.seek(0)
+        
         for linea in self.src:
-            if '=' in linea:
-                lista = linea.split(' =')
-                variable = lista[0]
-                igualacion = lista[1].replace('\n', '')
+            linea = linea.strip()
+            if not linea: continue
+            
+            partes = linea.split()
+            opcode = partes[0]
 
-                self.variables[variable] = igualacion
+            # 1. LABELS (Puntos de entrada)
+            if opcode == 'label':
+                # ¡CRÍTICO! Al entrar a una etiqueta (bucle o función), 
+                # no sabemos el estado de las variables, así que borramos la memoria.
+                self.variables.clear() 
+                self.dest.write(linea + '\n')
 
-        print('Todas las variables han sido obtenidas')
+            # 2. JUMPS INCONDICIONALES
+            elif opcode == 'jmp':
+                self.dest.write(linea + '\n')
 
-    def reemplazar(self):
+            # 3. POP (Invalida constantes)
+            elif opcode == 'pop':
+                var_destino = partes[1]
+                if var_destino in self.variables:
+                    del self.variables[var_destino]
+                self.dest.write(linea + '\n')
 
-        self.src.seek(0)
-        for linea in self.src:
+            # 4. PUSH (Propagación)
+            elif opcode == 'push':
+                arg = partes[1]
+                if arg in self.variables:
+                    arg = self.variables[arg]
+                self.dest.write(f"push {arg}\n")
 
-            if linea.startswith('label'):
-                self.dest.write(linea)
+            # 5. IFN (CORREGIDO: ifn 0 -> jmp / ifn 1 -> nada)
+            elif opcode == 'ifn':
+                condicion = partes[1]
+                label = partes[3]
 
-            if linea.startswith('jmp'):
-                self.dest.write(linea)
+                if condicion in self.variables:
+                    condicion = self.variables[condicion]
 
-            if linea.startswith('pop'):
-                self.dest.write(linea)
-
-            if linea.startswith('push'):
-                bandera = 0
-                nuevaLinea = str()
-                miembros = linea.replace('\n', '').split('push ')
-
-                for key in self.variables:
-                    if re.match(r't\d+', key):
-                        if key in linea:
-                            for miembro in miembros:
-                                if key == miembro:
-                                    nuevaLinea = linea.replace(
-                                        key, self.variables[key])
-                                    bandera = 1
-
-                if bandera == 1:
-                    for key in self.reemplazos:
-                        if key in nuevaLinea:
-                            nuevaLinea = nuevaLinea.replace(
-                                key, self.variables[key])
-                    self.dest.write(nuevaLinea)
+                # --- LÓGICA CORREGIDA ---
+                # 'ifn X' significa 'Jump if Not True' (Salta si es Falso/0)
+                
+                # Caso A: La condición es 0 (FALSO) -> DEBE SALTAR SIEMPRE
+                if condicion == '0':
+                    self.dest.write(f"jmp {label}\n")
+                    
+                # Caso B: La condición es distinta de 0 (VERDADERO) -> NUNCA SALTA
+                # Borramos la línea porque el flujo sigue recto.
+                elif condicion.replace('.','',1).isdigit() and float(condicion) != 0:
+                    continue 
+                    
+                # Caso C: Variable desconocida -> Escribimos la instrucción normal
                 else:
-                    self.dest.write(linea)
+                    self.dest.write(f"ifn {condicion} jmp {label}\n")
 
-            if '=' in linea:
-                miembros = linea.split(' = ')
-                miembrosDerecha = miembros[1].replace('\n', '').split()
-                # Miembro izquierdo es una variable
-                if not re.match(r't\d+', miembros[0]):
-                    nuevoMiembro = str()
-
-                    for key in self.variables:
-                        # Si la key no es exactamente igual al miembro derecho, pero esta en el, entonces se procesa
-                        if key in miembros[1]:
-                            # Se recorre todo lo que haya en el miembro derecho de la igualacion
-                            for miembro in miembrosDerecha:
-                                # Si la key coincide con el submiembro del miembro derecho, lo reemplaza
-                                if key == miembro:
-                                    index = miembrosDerecha.index(miembro)
-                                    miembrosDerecha[index] = self.variables[key]
-                            # Se unifican todos los submiembros del miembro derecho
-                            nuevoMiembro = ' '.join(miembrosDerecha)
-                            miembros[1] = nuevoMiembro
-
-                    # Si el miembro derecho coincide con una operacion, esta se resuelve y se escribira el resultado
-                    if re.match(r'^[0-9+\-*/%(). ]+$', miembros[1]):
-                        miembros[1] = self.calcular(miembros[1])
-
-                    # Reconstruimos la linea
-                    nuevaLinea = str(miembros[0] + ' = ' + miembros[1] + '\n')
-
-                    # Si el miembro derecho esta en variables, quiere decir que es una igualacion entre 2 variables, es decir
-                    # una repeticion, por lo que es ignorada
-                    if not miembros[1] in self.variables:
-                        for key in self.reemplazos:
-                            if key in miembros[1]:
-                                nuevaLinea = nuevaLinea.replace(
-                                    key, self.variables[key])
-                        self.dest.write(nuevaLinea)
+            # 6. ASIGNACIONES
+            elif '=' in linea:
+                lado_izq = partes[0]
+                lado_der_str = linea.split('=', 1)[1].strip()
+                
+                # Reemplazo de variables en la derecha
+                tokens_der = re.split(r'(\+|-|\*|/|%|>|<|==|>=|<=)', lado_der_str)
+                nuevo_lado_der = []
+                
+                for token in tokens_der:
+                    token = token.strip()
+                    if not token: continue
+                    if token in self.variables:
+                        nuevo_lado_der.append(str(self.variables[token]))
                     else:
-                        self.reemplazos[miembros[0]] = miembros[1]
+                        nuevo_lado_der.append(token)
+                
+                lado_der_procesado = " ".join(nuevo_lado_der)
 
-                    # Actualizamos el valor de la variable en el miembro izquierdo
-                    if miembros[0] in self.variables:
-                        if miembros[1] in self.variables:
-                            for key in self.reemplazos:
-                                if key == miembros[1]:
-                                    miembros[1] = self.reemplazos[key]
-                        self.variables[miembros[0]] = miembros[1]
+                # Intentar resolver matemáticas
+                valor_final = lado_der_procesado
+                es_constante = False
 
-                # Miembro izquierdo es un temporal
+                if re.match(r'^[0-9+\-*/%(). <>=]+$', lado_der_procesado):
+                    try:
+                        resultado = eval(lado_der_procesado)
+                        if isinstance(resultado, bool):
+                            resultado = 1 if resultado else 0
+                        valor_final = str(resultado)
+                        es_constante = True
+                    except:
+                        pass
+
+                # Guardar conocimiento
+                if es_constante:
+                    self.variables[lado_izq] = valor_final
                 else:
-                    nuevoMiembro = str()
+                    if lado_izq in self.variables:
+                        del self.variables[lado_izq]
 
-                    for key in self.variables:
+                # Escritura inteligente
+                if es_constante and lado_izq.startswith('temp'):
+                    continue # Propagamos temporales constantes
+                else:
+                    self.dest.write(f"{lado_izq} = {valor_final}\n")
 
-                        if key in miembros[1]:
-                            for miembro in miembrosDerecha:
-                                if re.match(r't\d+', miembro):
-                                    if key == miembro:
-                                        index = miembrosDerecha.index(miembro)
-                                        miembrosDerecha[index] = self.variables[key]
+            else:
+                self.dest.write(linea + '\n')
 
-                    nuevoMiembro = ' '.join(miembrosDerecha)
-                    if nuevoMiembro != '':
-                        miembros[1] = nuevoMiembro
-
-                    if re.match(r'^[0-9+\-*/%(). ]+$', miembros[1]):
-                        miembros[1] = self.calcular(miembros[1])
-
-                    self.variables[miembros[0]
-                                   ] = miembros[1].replace('\n', '')
-
-    def calcular(self, linea) -> str:
-        cadena = linea.replace('push ', '')
-        return str(eval(cadena))
+        print('Todas las variables han sido procesadas')
+        print("\033[1;32m"+'--- Optimizacion completada ---'+"\033[0m")

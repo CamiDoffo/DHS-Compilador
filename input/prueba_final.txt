@@ -1,0 +1,45 @@
+int a, b, c;  
+float x, y;   
+bool flag;
+
+int funcionSuma(int n1, int n2) {
+    return n1 + n2;
+}
+
+void main() {
+    // 1. Prueba de asignación y aritmética básica
+    a = 10;
+    b = 20;
+    c = a + b * 2;
+
+    // 2. Prueba de declaración múltiple e inicialización en línea
+    // (Esto debería funcionar con tu cambio en la gramática y el for en Escucha)
+    int i, j, k;
+    i = 0;
+    
+    // 3. Prueba de Contextos (Scope)
+    // 'temp' solo debe existir dentro de las llaves
+    if (c > 50) {
+        int temp;
+        temp = 100;
+        x = temp;
+    } 
+    
+    // Si intentaras usar 'temp' aquí afuera, debería dar error semántico.
+    // x = temp; // Descomenta para probar el error
+    
+    // 4. Prueba de While y optimización
+    // El optimizador debería propagar constantes aquí si es posible
+    while (i < 5) {
+        i = i + 1;
+        y = 3.14;
+    }
+
+    // 5. Prueba de Función y Argumentos
+    k = funcionSuma(a, b);
+
+    // 6. Prueba de Variable NO Inicializada
+    // 'j' fue declarada arriba pero nunca se le dio valor.
+    // Esto debería lanzar tu nueva ADVERTENCIA en la consola.
+    c = j + 1;
+}

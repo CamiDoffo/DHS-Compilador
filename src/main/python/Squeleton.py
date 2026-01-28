@@ -1,4 +1,5 @@
 from abc import abstractmethod, ABC
+import inspect
 
 class ID(ABC):
     args = []
@@ -12,9 +13,9 @@ class ID(ABC):
     def get_tipoDato(self):
         return str(self.tipoDato)
     
-    def set_inicializado(self):
-        self.inicializado = True
-    
+    def set_inicializado(self, valor=True):
+        self.inicializado = valor
+
     def set_usado(self):
         self.usado = True
     
@@ -61,90 +62,63 @@ class Contexto:
                 ids_repr += id.__str__() + "\n"
         return "Contexto "+self.nombreContexto+": \n"+ ids_repr
 
+class Contexto:
+    def __init__(self, nombre=""):
+        self.nombre = nombre
+        self.ids = {}
+
+    def agregarID(self, id):
+        self.ids[id.nombre] = id
+
 class TablaSimbolos:
-    """
-    Dict<String, ID> tabla ==> es un diccionario porque el string 
-                                osea el nombre del objeto será la referencia 
-                                a la informacion guardada en el tipo ID
-    """
-    instancia = None
-    contextos = []
-    
+    __instance = None
+
+    def __init__(self):
+        self.contextos = []
+
     @staticmethod
     def get_instancia():
-        """
-        Crea la tabla si es que no existe previamente
-        """
-        if TablaSimbolos.instancia is None:
-            TablaSimbolos.instancia = TablaSimbolos()
-        return TablaSimbolos.instancia
-        
-    def __init__(self):
-        if TablaSimbolos.instancia is not None:
-            raise Exception("La clase Tabla de Simbolos no puede ser instanciada mas de una vez!")
-        self.contextos = []
-        self.contextos.append(Contexto("Global"))
-        TablaSimbolos.instancia = self
-        
-    def add_contexto(self, nombreContexto):
-        """
-        Agrega un nuevo contexto a la tabla de simbolos
-        """
-        print("Agregando contexto ......")
-        #print("Instancia: "+ self.get_instancia().getText())
-        nuevoContexto = Contexto(nombreContexto)
-        self.contextos.append(nuevoContexto)
-        return nuevoContexto
-        
+        if TablaSimbolos.__instance is None:
+            TablaSimbolos.__instance = TablaSimbolos()
+        return TablaSimbolos.__instance
+
+    def add_contexto(self, nombre=""):
+        nuevo = Contexto(nombre)
+        self.contextos.append(nuevo)
+
     def del_Contexto(self):
-        """
-        Elimina el ultimo contexto
-        """
-        #print(self.__str__())
-        if self.contextos is not None:
+        if len(self.contextos) > 0:
             return self.contextos.pop()
         return None
-        
+
     def add_identificador(self, id):
-        """
-        Agrega un identificador al contexto actual
-        """
-        self.contextos[-1].agregarID(id)
-    
+        if self.contextos:
+            self.contextos[-1].ids[id.nombre] = id
+
     def buscar_local(self, nombre):
+        """Busca SOLO en el contexto actual (tope de la pila)."""
+        if not self.contextos:
+            return None
+        if nombre in self.contextos[-1].ids:
+            return self.contextos[-1].ids[nombre]
+        return None
+
+    # --- ESTA ES LA FUNCIÓN QUE TE FALTA CORREGIR ---
+    def buscar_global(self, nombre):
         """
-        Busca en el contexto actual (para for o funcion con argumentos)
-        """
-        contexto_actual = self.contextos[-1]
-        return contexto_actual.ids.get(nombre)
-            
-    def buscar_global(self, nombre) -> ID:
-        """
-        Busca el contexto globalmente (para cosas anidadas)
+        Busca en CUALQUIER contexto, empezando por el actual y bajando hasta el global.
+        Usamos 'reversed' para ir del tope (local) hacia la base (global).
         """
         for ctx in reversed(self.contextos):
             if nombre in ctx.ids:
                 return ctx.ids[nombre]
         return None
-    def __str__(self):
-        ctx_repr = ""
-        for ctx in self.contextos:
-            ctx_repr += ctx.__str__() + "\n"
-        return "Tabla de Simbolos:\n" + ctx_repr
-    
+    # ------------------------------------------------
+
     def mostrarVarsSinUsar(self):
-        # Filtrar las variables que no han sido usadas
-        vars_sin_usar = ""
-        for contexto in self.contextos:
-            for id in contexto.ids.values():
-                if not id.usado:  # Verificar si la variable no ha sido usada
-                    vars_sin_usar += id.__str__()+"\n"
-        
-        # Imprimir las variables sin usar
-        if vars_sin_usar != "":
-            print("Variables sin usar:")
-            # for id in vars_sin_usar:
-            #     print(id)  # Esto llamará al método _str_ de la clase ID
-            print(vars_sin_usar)
-        else:
-            print("No hay variables sin usar.")
+        print("\nVariables sin usar:")
+        for ctx in self.contextos:
+            for id_obj in ctx.ids.values():
+                # Verificamos si tiene atributo 'usado' y si es falso
+                if hasattr(id_obj, 'usado') and not id_obj.usado:
+                     print(f"{type(id_obj).__name__} {id_obj.nombre}: Inicializado? {getattr(id_obj, 'inicializado', False)}, Usado? False")
