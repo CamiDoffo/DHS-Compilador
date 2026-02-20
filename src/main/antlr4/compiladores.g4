@@ -67,6 +67,7 @@ declaracionGlobal: tipoDatos ID restoDeclaracion;
 
 restoDeclaracion
     : PA argumentos PC bloque   // Si sigue un '(', es función
+    | PA argumentos PC PYC      // Prototipo con tipo
     | listaVars                 // Si sigue ',' o ';', es variable
     | asignacionInit            // Si sigue '=', es inicialización
     ;
@@ -74,7 +75,10 @@ restoDeclaracion
 listaVars: (COMA ID)* PYC;
 asignacionInit: ASIG exp PYC;
 
-funcionVoid: VOID ID PA argumentos PC bloque;
+funcionVoid
+    : VOID ID PA argumentos PC bloque //Funcion void normal
+    | VOID ID PA argumentos PC PYC     // Prototipo void
+    ;
 
 // --- ESTRUCTURAS ---
 tipoDatos: BOOL | INT | FLOAT | DOUBLE ; 

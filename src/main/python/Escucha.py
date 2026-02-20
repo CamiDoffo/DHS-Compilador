@@ -14,10 +14,6 @@ class Escucha(compiladoresListener):
         # Archivo de log
         self.log_file = open('./output/Compilacion.txt', 'w', encoding='utf-8')
         self.nivel_indentacion = 0
-        
-        # Variables auxiliares
-        self.nombre_funcion_actual = None
-        self.tipo_funcion_actual = None
 
     def write_log(self, mensaje, indentar=True):
         if indentar:
@@ -40,7 +36,7 @@ class Escucha(compiladoresListener):
 
     def exitPrograma(self, ctx: compiladoresParser.ProgramaContext):
         print("\t\tFin de la compilacion")
-        # print(self.tabla.__str__()) # Descomentar si quieres ver la tabla completa al final
+        # print(self.tabla.__str__()) # Descomentar para ver la tabla completa al final
         self.tabla.mostrarVarsSinUsar()
         self.tabla.del_Contexto()
 
@@ -53,8 +49,17 @@ class Escucha(compiladoresListener):
         # Verificamos si es una VARIABLE mirando el resto (si no empieza con '(' )
         ctx_resto = ctx.getChild(2)
         primer_token = ctx_resto.start.text 
+        ultimo_token = ctx_resto.stop.text # Miramos cómo termina
 
-        if primer_token != '(':
+        # SI EMPIEZA CON '(' Y TERMINA CON ';' ES UN PROTOTIPO
+        if primer_token == '(' and ultimo_token == ';':
+            tipo = ctx.getChild(0).getText()
+            nombre = ctx.getChild(1).getText()
+            print(f"DEBUG: Prototipo Detectado -> {tipo} {nombre}")
+            # Llamamos a procesarFuncion pero le avisamos que es prototipo (puedes adaptar la función)
+            self.procesarFuncion(nombre, tipo, ctx_resto, es_prototipo=True)
+
+        elif primer_token != '(':
             tipo = ctx.getChild(0).getText()
             nombre_primero = ctx.getChild(1).getText()
             
@@ -134,53 +139,28 @@ class Escucha(compiladoresListener):
             print(f"DEBUG: Función Detectada (Void) -> {tipo} {nombre}")
             self.procesarFuncion(nombre, tipo, padre)
         
-        # CASO C: Bloque suelto
+        # CASO C: Bloque suelto (if, while, for, o simplemente { })
         else:
-            # print("\t\tENTER BLOQUE")
-            # self.tabla.add_contexto("BLOQUE")
-            pass
+            # ESTRICTO ESTILO C: Creamos un nuevo contexto temporal
+            self.write_log("ENTER BLOQUE (Scope Local)", indentar=True)
+            self.tabla.add_contexto("BLOQUE")
 
     def exitBloque(self, ctx: compiladoresParser.BloqueContext):
         padre = ctx.parentCtx
         es_funcion_tipo = isinstance(padre, compiladoresParser.RestoDeclaracionContext) and padre.start.text == '('
         es_funcion_void = isinstance(padre, compiladoresParser.FuncionVoidContext)
         
+        # Si salimos de una función, cerramos el contexto de la función
         if es_funcion_tipo or es_funcion_void:
             self.cerrarContextoFuncion()
+            
+        # Si salimos de un bloque normal (if, while), cerramos su propio contexto
         else:
-            # print("\t\tEXIT BLOQUE")
-            # self.tabla.del_Contexto()
-            pass
+            self.write_log("EXIT BLOQUE (Destruyendo Scope Local)", indentar=True)
+            self.tabla.del_Contexto()
 
     def exitFuncionVoid(self, ctx):
         self.cerrarContextoFuncion()
-
-    # --- Prototipos ---
-    def exitProtofun(self, ctx: compiladoresParser.ProtofunContext):
-        nombreFuncion = ctx.getChild(1).getText().split('(')[0].strip()
-        linea = ctx.start.line
-        
-        # Extracción de args para prototipos
-        args_ctx = ctx.getChild(1).getChild(2)
-        args = []
-        if args_ctx is not None:
-             # Lógica simplificada de regex para extraer tipos
-             raw_args = args_ctx.getText().split(',')
-             for t in raw_args:
-                 if 'int' in t: args.append('int')
-                 elif 'float' in t: args.append('float')
-                 elif 'bool' in t: args.append('bool')
-
-        funcion = Funcion(nombreFuncion, ctx.getChild(0).getText())
-        funcion.set_args(args)
-        
-        if self.tabla.buscar_local(nombreFuncion) is None:
-            print(f"\033[1;32mLínea {linea}: Prototipo '{nombreFuncion}' declarado.\033[0m")
-            funcion.set_inicializado()
-            self.tabla.add_identificador(funcion)
-        else:
-            print(f"\033[1;31mLínea {linea}: ERROR: Función '{nombreFuncion}' ya declarada.\033[0m")
-            self.error = True
 
     # =========================================================================
     #  ASIGNACIONES Y LLAMADAS A FUNCIONES (Validación Semántica)
@@ -287,7 +267,7 @@ class Escucha(compiladoresListener):
     # =========================================================================
     #  MÉTODOS AUXILIARES Y HERRAMIENTAS
     # =========================================================================
-    def procesarFuncion(self, nombre, tipo, ctx_donde_estan_args):
+    def procesarFuncion(self, nombre, tipo, ctx_donde_estan_args, es_prototipo=False):
         if '(' in nombre: nombre = nombre.split('(')[0]
 
         funcion = Funcion(nombre, tipo)
@@ -305,13 +285,22 @@ class Escucha(compiladoresListener):
                     elif 'double' in t: funcion.args.append('double')
         
         funcion.set_inicializado()
-        if self.tabla.buscar_local(nombre) is None:
+        # LÓGICA DE PROTOTIPOS
+        busqueda = self.tabla.buscar_local(nombre)
+        
+        if busqueda is None:
+            # No existía, la agregamos (puede ser el prototipo o la función directa)
             self.tabla.add_identificador(funcion)
         else:
-             print(f"Error: La función {nombre} ya existe.")
+            # Ya existía. Si estamos entrando al BLOQUE (no es prototipo),
+            # asumimos que lo que estaba en la tabla era el prototipo. Es válido.
+            if es_prototipo:
+                print(f"\033[1;33mAdvertencia: Prototipo '{nombre}' re-declarado.\033[0m")
         
-        self.write_log(f"ENTER FUNCION {nombre}", indentar=True)
-        self.tabla.add_contexto("FUNCION")
+        # Solo abrimos contexto (scope) si NO es un prototipo
+        if not es_prototipo:
+            self.write_log(f"ENTER FUNCION {nombre}", indentar=True)
+            self.tabla.add_contexto("FUNCION")
 
     def guardarVariable(self, tipo, nombre):
         var = Variable(nombre, tipo)

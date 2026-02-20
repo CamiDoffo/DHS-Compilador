@@ -10,6 +10,14 @@ ENTER FUNCION main
 Declarada variable global: int i
 Declarada variable global: int j
 Declarada variable global: int k
+ENTER BLOQUE (Scope Local)
 Declarada variable global: int temp
+EXIT BLOQUE (Destruyendo Scope Local)
+ENTER BLOQUE (Scope Local)
+EXIT BLOQUE (Destruyendo Scope Local)
+Declarada variable global: int global_del_main
+ENTER BLOQUE (Scope Local)
+Declarada variable global: int variable_efimera
+EXIT BLOQUE (Destruyendo Scope Local)
 EXIT FUNCION
 EXIT FUNCION

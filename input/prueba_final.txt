@@ -42,4 +42,15 @@ void main() {
     // 'j' fue declarada arriba pero nunca se le dio valor.
     // Esto debería lanzar tu nueva ADVERTENCIA en la consola.
     c = j + 1;
+
+    // 7. Prueba de variable inicializada dentro de bloque
+    int global_del_main = 10;
+    
+    if (global_del_main > 5) {
+        int variable_efimera = 20; // Nace dentro del IF
+        global_del_main = variable_efimera + 5; // Válido, el IF ve hacia afuera
+    }
+    
+    // Al intentar usar la variable fuera del IF, el compilador debe fallar
+    global_del_main = variable_efimera;
 }

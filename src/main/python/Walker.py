@@ -70,31 +70,37 @@ class Walker(compiladoresVisitor):
         ctx_resto = ctx.restoDeclaracion()
         primer_char = ctx_resto.start.text
 
-        if primer_char == '(': # Función
-            if nombre != 'main':
-                self.inFuncion = 1
-                etiquetas = self.labels.etiqueta_funcion(nombre)
-                self.f.write(f'label {etiquetas[0]}\n')
-                self.f.write(f'pop {etiquetas[1]}\n')
-                self.visit(ctx_resto.bloque())
-                self.f.write(f'jmp {etiquetas[1]}\n')
-                self.inFuncion = 0
+        if primer_char == '(': # Función o Prototipo
+            # Solo generamos código si TIENE BLOQUE
+            if ctx_resto.bloque() is not None: 
+                if nombre != 'main':
+                    self.inFuncion = 1
+                    etiquetas = self.labels.etiqueta_funcion(nombre)
+                    self.f.write(f'label {etiquetas[0]}\n')
+                    self.f.write(f'pop {etiquetas[1]}\n')
+                    self.visit(ctx_resto.bloque())
+                    self.f.write(f'jmp {etiquetas[1]}\n')
+                    self.inFuncion = 0
+                else:
+                    self.visit(ctx_resto.bloque())
             else:
-                self.visit(ctx_resto.bloque())
+                pass # Es un prototipo (termina en ';'). No generamos código.
         else: # Variable
             if ctx_resto.asignacionInit():
                 self.visit(ctx_resto.asignacionInit())
 
     def visitFuncionVoid(self, ctx: compiladoresParser.FuncionVoidContext):
         nombre = ctx.getChild(1).getText()
-        if nombre != 'main':
-            self.inFuncion = 1
-            etiquetas = self.labels.etiqueta_funcion(nombre)
-            self.f.write(f'label {etiquetas[0]}\n')
-            self.f.write(f'pop {etiquetas[1]}\n')
-            self.visit(ctx.bloque())
-            self.f.write(f'jmp {etiquetas[1]}\n')
-            self.inFuncion = 0
+        # Solo generamos código si TIENE BLOQUE
+        if ctx.bloque() is not None:
+            if nombre != 'main':
+                self.inFuncion = 1
+                etiquetas = self.labels.etiqueta_funcion(nombre)
+                self.f.write(f'label {etiquetas[0]}\n')
+                self.f.write(f'pop {etiquetas[1]}\n')
+                self.visit(ctx.bloque())
+                self.f.write(f'jmp {etiquetas[1]}\n')
+                self.inFuncion = 0
         else:
             self.visit(ctx.bloque())
 

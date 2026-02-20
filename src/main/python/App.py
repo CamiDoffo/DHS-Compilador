@@ -32,8 +32,7 @@ def main(argv):
             
             optimizador = Optimizador()
             
-            # REINICIO FORZADO DE ARCHIVOS:
-            # Como tu clase Optimizador abre los archivos al definirse, 
+            # REINICIO FORZADO DE ARCHIVOS: 
             # forzamos que los abra de nuevo para leer la versión actualizada.
             optimizador.src = open("./output/CodigoIntermedio.txt", "r")
             optimizador.dest = open("./output/CodigoIntermedioOptimizado.txt", "w")
