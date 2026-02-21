@@ -8,7 +8,7 @@ from Walker import Walker
 from Optimizador import Optimizador
 
 def main(argv):
-    archivo = "input/prueba_final.txt"
+    archivo = "input/prueba.txt"
     if len(argv) > 1 :
         archivo = argv[1]
     input = FileStream(archivo, encoding='utf-8')
