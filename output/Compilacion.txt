@@ -1,23 +1,29 @@
-Declarada variable global: int a
-Declarada variable global: int b
-Declarada variable global: int c
-Declarada variable global: float x
-Declarada variable global: float y
-Declarada variable global: bool flag
-ENTER FUNCION funcionSuma
+Declarada variable: double q
+ENTER FUNCION main
+Declarada variable: int i
+Declarada variable: int x
+Declarada variable: int j
+Declarada variable: int z
+Declarada variable: int y
+Declarada variable: int a
+Declarada variable: bool c
+Declarada variable: double d
+ENTER BLOQUE (Scope Local)
+ENTER BLOQUE (Scope Local)
+EXIT BLOQUE (Destruyendo Scope Local)
+EXIT BLOQUE (Destruyendo Scope Local)
+ENTER BLOQUE (Scope Local)
+EXIT BLOQUE (Destruyendo Scope Local)
+Declarada variable: bool e
 EXIT FUNCION
 ENTER FUNCION main
-Declarada variable global: int i
-Declarada variable global: int j
-Declarada variable global: int k
-ENTER BLOQUE (Scope Local)
-Declarada variable global: int temp
-EXIT BLOQUE (Destruyendo Scope Local)
-ENTER BLOQUE (Scope Local)
-EXIT BLOQUE (Destruyendo Scope Local)
-Declarada variable global: int global_del_main
-ENTER BLOQUE (Scope Local)
-Declarada variable global: int variable_efimera
-EXIT BLOQUE (Destruyendo Scope Local)
+ENTER FUNCION xy
+Parámetro registrado en el scope local: bool argA
+Parámetro registrado en el scope local: int argB
+Declarada variable: int k
+Declarada variable: int m
+Declarada variable: bool p
 EXIT FUNCION
-EXIT FUNCION
+ENTER FUNCION xy
+Parámetro registrado en el scope local: bool argA
+Parámetro registrado en el scope local: int argB

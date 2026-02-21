@@ -50,7 +50,7 @@ programa: instrucciones EOF;
 instrucciones: instruccion* ;
 
 instruccion 
-    : declaracionGlobal    // Maneja int a; y int funcion()...
+    : declaracionGlobal    // Maneja int a, b=2; y int funcion()...
     | funcionVoid          // Maneja void main()...
     | iwhile
     | ifor
@@ -61,23 +61,18 @@ instruccion
     | bloque
     ;
 
-// --- RESOLUCIÓN DE CONFLICTO (Vital) ---
-// Leemos TIPO e ID primero, luego decidimos si es función o variable
-declaracionGlobal: tipoDatos ID restoDeclaracion;
+// --- RESOLUCIÓN DE CONFLICTO Y VARIABLES MÚLTIPLES ---
+declaracionGlobal : tipoDatos ID restoDeclaracion;
 
 restoDeclaracion
-    : PA argumentos PC bloque   // Si sigue un '(', es función
-    | PA argumentos PC PYC      // Prototipo con tipo
-    | listaVars                 // Si sigue ',' o ';', es variable
-    | asignacionInit            // Si sigue '=', es inicialización
+    : PA argumentos PC (bloque | PYC)       // Función normal o Prototipo
+    | (ASIG exp)? (COMA decItem)* PYC       // Variables simples o múltiples
     ;
 
-listaVars: (COMA ID)* PYC;
-asignacionInit: ASIG exp PYC;
+decItem : ID (ASIG exp)? ;
 
 funcionVoid
-    : VOID ID PA argumentos PC bloque //Funcion void normal
-    | VOID ID PA argumentos PC PYC     // Prototipo void
+    : VOID ID PA argumentos PC (bloque | PYC) // Función void normal o Prototipo
     ;
 
 // --- ESTRUCTURAS ---
@@ -86,26 +81,15 @@ tipoDatos: BOOL | INT | FLOAT | DOUBLE ;
 argumento: tipoDatos ID;
 argumentos: (argumento (COMA argumento)*)? ; 
 
-// Corrección: bloque ya NO puede ser una instrucción suelta para evitar ciclos
 bloque : LLA instrucciones LLC;
+instruccionOBloque : bloque | instruccion ;
 
-// --- RESTO ---
-declaracion : tipoDatos ID (COMA ID)* ; 
-declaracionPYC: declaracion PYC;
+iwhile : WHILE PA exp PC instruccionOBloque;
+iif: IF PA exp PC instruccionOBloque (ELSE instruccionOBloque)?;
+ifor : FOR PA (tipoDatos? decItem) PYC exp PYC asignacion PC instruccionOBloque;
 
-inic: tipoDatos asignacionNum PYC | tipoDatos asignacionBool PYC;
-
-asignacionNum : ID ASIG exp;
-asignacionBool : ID ASIG opbool;
-asignacion : asignacionNum | asignacionBool;
+asignacion : ID ASIG exp;
 asignacionPYC: asignacion PYC;
-
-iwhile : WHILE PA cond PC bloque;
-ifor : FOR PA init PYC cond PYC iter PC bloque;
-init : asignacionNum;
-iter: ID ASIG ID iteracion; 
-iteracion: (SUMA|RESTA|MULT|DIV) NUMERO;
-iif: IF PA cond PC bloque (ELSE bloque)?;
 
 returnfun: RETURN exp | RETURN;
 
@@ -113,12 +97,13 @@ ids: (exp (COMA exp)*)? ;
 funcionVar: ID PA ids PC;
 llamadafun: funcionVar PYC;
 
-exp: term expPrima*; 
-expPrima: (SUMA|RESTA) term;
-term: factor t*;
-t   : (MULT|DIV|MOD) factor;
-factor: NUMERO | DECIMAL | ID | funcionVar | PA exp PC;
+// --- EXPRESIÓN UNIFICADA (La Magia) ---
+exp : exp (MULT | DIV | MOD) exp         // Prioridad 1: Matemáticas
+    | exp (SUMA | RESTA) exp             // Prioridad 2: Matemáticas
+    | exp (MAY | MEN | MAYI | IGUAL) exp // Prioridad 3: Comparaciones
+    | exp AND exp                        // Prioridad 4: AND lógico
+    | exp OR exp                         // Prioridad 5: OR lógico
+    | factor
+    ;
 
-opcomp : ID (MEN | MAY | MENI | MAYI | IGUAL) factor;
-opbool : (TRUE | FALSE) ( (OR|AND) (TRUE|FALSE) )*; 
-cond : opcomp | opbool;
+factor: NUMERO | DECIMAL | TRUE | FALSE | ID | funcionVar | PA exp PC;

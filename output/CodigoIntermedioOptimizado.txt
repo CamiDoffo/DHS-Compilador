@@ -1,35 +1,114 @@
-label label0
-pop label1
-temp0 = n1
-temp1 = n2
-temp2 = temp0 + temp1
-push temp2
+x = 10
+y = 5
+variable1 = 10
+variable2 = 5
+w = 50
+p = 60
+r1 = 60
+m = 50
+n = 80.0
+r2 = 80.0
+variable3 = 10
+variable4 = 10
+cond = 1
+temp35 = temp31 || temp34
+temp39 = temp35 && temp38
+ifn temp39 jmp label0
+x = 1
+dummy = 1
 jmp label1
-a = 10
-b = 20
-c = 50
-i = 0
-jmp label2
-x = 100
-label label2
-label label3
-temp16 = i < 5
-ifn temp16 jmp label4
-temp17 = i
-temp19 = temp17 + 1
-i = temp19
-y = 3.14
-jmp label3
-label label4
-temp21 = a
-temp22 = b
-push temp21
-push temp22
-push label1
-jmp label0
+label label0
+x = 2
 label label1
-pop temp23
-k = temp23
-temp24 = j
-temp26 = temp24 + 1
-c = temp26
+temp45 = x
+r1 = temp45
+r1 = 1
+z = 0
+i = 0
+k = 0
+j = 0
+label label2
+temp51 = j
+temp53 = temp51 < 5
+ifn temp53 jmp label3
+temp54 = x
+temp56 = temp54 + 2
+variable5 = temp56
+temp57 = variable5
+z = temp57
+temp58 = x
+temp60 = temp58 + 2
+variable6 = temp60
+temp61 = variable6
+y = temp61
+temp62 = variable5
+temp64 = temp62 * 1
+dummy1 = temp64
+temp65 = j
+temp67 = temp65 + 1
+j = temp67
+jmp label2
+label label3
+temp68 = y
+temp69 = x
+push temp68
+push temp69
+push label5
+jmp label4
+label label5
+pop temp70
+res1 = temp70
+temp71 = res1
+r1 = temp71
+temp72 = y
+temp73 = x
+push temp72
+push temp73
+push label5
+jmp label4
+label label5
+pop temp74
+res2 = temp74
+temp75 = res2
+r2 = temp75
+temp76 = x
+temp78 = temp76 + 2
+variable7 = temp78
+temp79 = variable7
+z = temp79
+denom = 0
+r1 = 0
+label label4
+pop label5
+i = 0
+temp87 = a
+variable_a = temp87
+temp88 = b
+variable_b = temp88
+label label6
+temp89 = i
+temp91 = temp89 < 5
+ifn temp91 jmp label7
+temp93 = i
+temp94 = 1 + temp93
+suma_i = temp94
+temp95 = suma_i
+i = temp95
+temp96 = variable_a
+temp97 = i
+temp98 = temp96 + temp97
+nuevo_a = temp98
+temp99 = nuevo_a
+variable_a = temp99
+temp100 = nuevo_a
+temp102 = temp100 * 1
+dummy2 = temp102
+jmp label6
+label label7
+temp103 = variable_a
+temp104 = variable_b
+temp105 = temp103 + temp104
+resultado = temp105
+temp106 = resultado
+push temp106
+jmp label5

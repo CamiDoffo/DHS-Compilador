@@ -1,0 +1,178 @@
+temp0 = 10
+x = temp0
+temp1 = 5
+y = temp1
+temp2 = x
+variable1 = temp2
+temp3 = y
+variable2 = temp3
+temp4 = y
+temp5 = x
+temp6 = temp4 * temp5
+w = temp6
+temp7 = x
+temp8 = w
+temp9 = temp7 + temp8
+p = temp9
+temp10 = p
+r1 = temp10
+temp11 = y
+temp12 = x
+temp13 = temp11 * temp12
+m = temp13
+temp14 = x
+temp15 = m
+temp16 = 5
+temp17 = temp15 / temp16
+temp18 = temp14 + temp17
+temp19 = p
+temp20 = temp18 + temp19
+n = temp20
+temp21 = n
+r2 = temp21
+temp22 = x
+temp23 = 0
+temp24 = temp22 + temp23
+variable3 = temp24
+temp25 = variable3
+temp26 = 1
+temp27 = temp25 * temp26
+variable4 = temp27
+temp28 = x
+temp29 = 0
+temp30 = temp28 > temp29
+cond = temp30
+temp31 = cond
+temp32 = m
+temp33 = n
+temp34 = temp32 > temp33
+temp35 = temp31 || temp34
+temp36 = y
+temp37 = 10
+temp38 = temp36 < temp37
+temp39 = temp35 && temp38
+ifn temp39 jmp label0
+temp40 = 1
+x = temp40
+temp41 = x
+temp42 = 0
+temp43 = temp41 + temp42
+dummy = temp43
+jmp label1
+label label0
+temp44 = 2
+x = temp44
+label label1
+temp45 = x
+r1 = temp45
+temp46 = 1
+r1 = temp46
+temp47 = 0
+z = temp47
+temp48 = 0
+i = temp48
+temp49 = 0
+k = temp49
+temp50 = 0
+j = temp50
+label label2
+temp51 = j
+temp52 = 5
+temp53 = temp51 < temp52
+ifn temp53 jmp label3
+temp54 = x
+temp55 = 2
+temp56 = temp54 + temp55
+variable5 = temp56
+temp57 = variable5
+z = temp57
+temp58 = x
+temp59 = 2
+temp60 = temp58 + temp59
+variable6 = temp60
+temp61 = variable6
+y = temp61
+temp62 = variable5
+temp63 = 1
+temp64 = temp62 * temp63
+dummy1 = temp64
+temp65 = j
+temp66 = 1
+temp67 = temp65 + temp66
+j = temp67
+jmp label2
+label label3
+temp68 = y
+temp69 = x
+push temp68
+push temp69
+push label5
+jmp label4
+label label5
+pop temp70
+res1 = temp70
+temp71 = res1
+r1 = temp71
+temp72 = y
+temp73 = x
+push temp72
+push temp73
+push label5
+jmp label4
+label label5
+pop temp74
+res2 = temp74
+temp75 = res2
+r2 = temp75
+temp76 = x
+temp77 = 2
+temp78 = temp76 + temp77
+variable7 = temp78
+temp79 = variable7
+z = temp79
+temp80 = 2
+temp81 = 2
+temp82 = temp80 - temp81
+denom = temp82
+temp83 = 2
+temp84 = denom
+temp85 = temp83 * temp84
+r1 = temp85
+label label4
+pop label5
+temp86 = 0
+i = temp86
+temp87 = a
+variable_a = temp87
+temp88 = b
+variable_b = temp88
+label label6
+temp89 = i
+temp90 = 5
+temp91 = temp89 < temp90
+ifn temp91 jmp label7
+temp92 = 1
+temp93 = i
+temp94 = temp92 + temp93
+suma_i = temp94
+temp95 = suma_i
+i = temp95
+temp96 = variable_a
+temp97 = i
+temp98 = temp96 + temp97
+nuevo_a = temp98
+temp99 = nuevo_a
+variable_a = temp99
+temp100 = nuevo_a
+temp101 = 1
+temp102 = temp100 * temp101
+dummy2 = temp102
+jmp label6
+label label7
+temp103 = variable_a
+temp104 = variable_b
+temp105 = temp103 + temp104
+resultado = temp105
+temp106 = resultado
+push temp106
+jmp label5

@@ -1,324 +1,213 @@
-from antlr4 import ErrorNode, TerminalNode
+from antlr4 import ErrorNode
 from compiladoresListener import compiladoresListener
 from compiladoresParser import compiladoresParser
 from Squeleton import *
 import re
 
+# Constantes de color ANSI
+C_VERDE = "\033[1;32m"
+C_AMARILLO = "\033[1;33m"
+C_ROJO = "\033[1;31m"
+C_CIAN = "\033[1;36m"
+C_RESET = "\033[0m"
+
 class Escucha(compiladoresListener):
-    numTokens = 0
-    numNodos = 0
-    tabla = TablaSimbolos.get_instancia()
-    error = False
-
     def __init__(self):
-        # Archivo de log
-        self.log_file = open('./output/Compilacion.txt', 'w', encoding='utf-8')
-        self.nivel_indentacion = 0
-
-    def write_log(self, mensaje, indentar=True):
-        if indentar:
-            self.log_file.write('\t' * self.nivel_indentacion + mensaje + '\n')
-        else:
-            self.log_file.write(mensaje + '\n')
-        self.log_file.flush()
-
-    def __del__(self):
-        if hasattr(self, 'log_file'):
-            self.log_file.close()
+        self.tabla = TablaSimbolos.get_instancia()
+        self.error = False
 
     # =========================================================================
-    #  INICIO Y FIN DEL PROGRAMA (Contexto Global)
+    #  INICIO Y FIN DEL PROGRAMA
     # =========================================================================
     def enterPrograma(self, ctx: compiladoresParser.ProgramaContext):
-        print("\t\tComienza la compilacion")
-        print("----> CREANDO CONTEXTO GLOBAL")
+        print(f"{C_CIAN}Comienza la compilacion{C_RESET}")
+        print(f"{C_CIAN}----> CREANDO CONTEXTO GLOBAL{C_RESET}")
         self.tabla.add_contexto("Global")
 
     def exitPrograma(self, ctx: compiladoresParser.ProgramaContext):
-        print("\t\tFin de la compilacion")
-        # print(self.tabla.__str__()) # Descomentar para ver la tabla completa al final
+        print(f"\n{C_CIAN}\t\tFin de la compilacion{C_RESET}\n")
+        # mostrarVarsSinUsar() ya imprime su propio título
         self.tabla.mostrarVarsSinUsar()
         self.tabla.del_Contexto()
 
     # =========================================================================
-    #  DECLARACIÓN DE VARIABLES (Locales y Globales)
+    #  DECLARACIONES GLOBALES Y VARIABLES
     # =========================================================================
-
-    # --- Variables Globales (Regla declaracionGlobal) ---
     def exitDeclaracionGlobal(self, ctx: compiladoresParser.DeclaracionGlobalContext):
-        # Verificamos si es una VARIABLE mirando el resto (si no empieza con '(' )
-        ctx_resto = ctx.getChild(2)
+        tipo = ctx.getChild(0).getText()
+        nombre_principal = ctx.getChild(1).getText()
+        ctx_resto = ctx.restoDeclaracion()
         primer_token = ctx_resto.start.text 
-        ultimo_token = ctx_resto.stop.text # Miramos cómo termina
-
-        # SI EMPIEZA CON '(' Y TERMINA CON ';' ES UN PROTOTIPO
-        if primer_token == '(' and ultimo_token == ';':
-            tipo = ctx.getChild(0).getText()
-            nombre = ctx.getChild(1).getText()
-            print(f"DEBUG: Prototipo Detectado -> {tipo} {nombre}")
-            # Llamamos a procesarFuncion pero le avisamos que es prototipo (puedes adaptar la función)
-            self.procesarFuncion(nombre, tipo, ctx_resto, es_prototipo=True)
-
-        elif primer_token != '(':
-            tipo = ctx.getChild(0).getText()
-            nombre_primero = ctx.getChild(1).getText()
-            
-            self.guardarVariable(tipo, nombre_primero)
-            
-            # Guardamos las demás si existen (ej: int a, b, c;)
-            texto_resto = ctx_resto.getText()
-            if ',' in texto_resto and '=' not in texto_resto:
-                vars_extra = texto_resto.replace(';', '').split(',')
-                for v in vars_extra:
-                    v = v.strip()
-                    if v and v != ',':
-                        self.guardarVariable(tipo, v)
-
-    # --- Variables Locales (Regla declaracion) ---
-    def exitDeclaracion(self, ctx: compiladoresParser.DeclaracionContext):
-        tipoDeDato = ctx.getChild(0).getText()
-        linea = ctx.start.line
         
-        for token_id in ctx.ID(): 
-            nombreVariable = token_id.getText()
-            variable = Variable(nombreVariable, tipoDeDato)
-            
-            busquedaLocal = self.tabla.buscar_local(nombreVariable)
-            busquedaGlobal = self.tabla.buscar_global(nombreVariable)
-            
-            if busquedaLocal is None:
-                self.tabla.add_identificador(variable)
-                if busquedaGlobal is None:
-                    print(f"\033[1;32mLínea {linea}: La variable '{nombreVariable}' se declaró en el contexto actual.\033[0m")
-                else:
-                    print(f"\033[1;33mLínea {linea}: Advertencia: La variable '{nombreVariable}' oculta una variable global.\033[0m")
-            else:
-                print(f"\033[1;31mLínea {linea}: ERROR SEMÁNTICO: La variable '{nombreVariable}' ya fue declarada localmente.\033[0m")
-                self.error = True
-
-    # --- Inicialización con Asignación (int a = 10;) ---
-    def exitInic(self, ctx):
-        nombreVariable = ctx.getChild(1).getText()
-        linea = ctx.start.line
-        
-        if '=' in nombreVariable:
-            nombreVariable = nombreVariable.split('=')[0].strip()
-
-        busquedaLocal = self.tabla.buscar_local(nombreVariable)
-        tipoDeDato = ctx.getChild(0).getText()
-        variable = Variable(nombreVariable, tipoDeDato)
-
-        if busquedaLocal is None:
-            print(f"\033[1;32mLínea {linea}: La variable '{nombreVariable}' se inicializó correctamente.\033[0m")
-            variable.set_inicializado()
-            self.tabla.add_identificador(variable)
+        if primer_token == '(':
+            self.procesarFuncion(nombre_principal, tipo, ctx_resto)
         else:
-            print(f"\033[1;31mLínea {linea}: ERROR SEMANTICO: Variable '{nombreVariable}' redeclarada.\033[0m")
-            self.error = True
+            self.guardarVariable(tipo, nombre_principal, inicializado=ctx_resto.exp() is not None)
+            if ctx_resto.exp():
+                self.auditarAsignacion(nombre_principal, ctx_resto.exp(), ctx.start.line)
+
+    def exitDecItem(self, ctx: compiladoresParser.DecItemContext):
+        if ctx.parentCtx and isinstance(ctx.parentCtx, compiladoresParser.RestoDeclaracionContext):
+            tipo = ctx.parentCtx.parentCtx.getChild(0).getText()
+            nombre = ctx.ID().getText()
+            inicializado = ctx.exp() is not None
+            self.guardarVariable(tipo, nombre, inicializado)
+            if inicializado:
+                self.auditarAsignacion(nombre, ctx.exp(), ctx.start.line)
+                
+        elif ctx.parentCtx and isinstance(ctx.parentCtx, compiladoresParser.IforContext):
+            tipo_ctx = ctx.parentCtx.tipoDatos()
+            tipo = tipo_ctx.getText() if tipo_ctx else "int"
+            nombre = ctx.ID().getText()
+            self.guardarVariable(tipo, nombre, inicializado=True)
+            if ctx.exp():
+                self.auditarAsignacion(nombre, ctx.exp(), ctx.start.line)
+
+    def exitFuncionVoid(self, ctx: compiladoresParser.FuncionVoidContext):
+        nombre = ctx.getChild(1).getText()
+        self.procesarFuncion(nombre, "void", ctx)
 
     # =========================================================================
-    #  DEFINICIÓN DE FUNCIONES (Manejo de Contextos)
+    #  MANEJO DE CONTEXTOS Y BLOQUES (ENTER/EXIT)
     # =========================================================================
-
     def enterBloque(self, ctx: compiladoresParser.BloqueContext):
         padre = ctx.parentCtx
         
-        # CASO A: Función con Tipo (int suma() { ... })
         if isinstance(padre, compiladoresParser.RestoDeclaracionContext):
-            if padre.start.text == '(':
-                abuelo = padre.parentCtx
-                tipo = abuelo.getChild(0).getText()
-                nombre = abuelo.getChild(1).getText()
-                print(f"DEBUG: Función Detectada (Con Tipo) -> {tipo} {nombre}")
-                self.procesarFuncion(nombre, tipo, padre)
-
-        # CASO B: Función Void (void main() { ... })
+            abuelo = padre.parentCtx
+            tipo = abuelo.getChild(0).getText()
+            nombre = abuelo.getChild(1).getText()
+            if '(' in nombre: nombre = nombre.split('(')[0]
+            print(f"{C_CIAN}DEBUG: Función Detectada (Con Tipo) -> {tipo} {nombre}{C_RESET}")
+            self.tabla.add_contexto("FUNCION")
+            self.inyectarArgumentos(padre)
+            
         elif isinstance(padre, compiladoresParser.FuncionVoidContext):
-            tipo = "void"
             nombre = padre.getChild(1).getText()
-            print(f"DEBUG: Función Detectada (Void) -> {tipo} {nombre}")
-            self.procesarFuncion(nombre, tipo, padre)
-        
-        # CASO C: Bloque suelto (if, while, for, o simplemente { })
+            print(f"{C_CIAN}DEBUG: Función Detectada (Void) -> void {nombre}{C_RESET}")
+            self.tabla.add_contexto("FUNCION")
+            self.inyectarArgumentos(padre)
         else:
-            # ESTRICTO ESTILO C: Creamos un nuevo contexto temporal
-            self.write_log("ENTER BLOQUE (Scope Local)", indentar=True)
             self.tabla.add_contexto("BLOQUE")
 
     def exitBloque(self, ctx: compiladoresParser.BloqueContext):
-        padre = ctx.parentCtx
-        es_funcion_tipo = isinstance(padre, compiladoresParser.RestoDeclaracionContext) and padre.start.text == '('
-        es_funcion_void = isinstance(padre, compiladoresParser.FuncionVoidContext)
-        
-        # Si salimos de una función, cerramos el contexto de la función
-        if es_funcion_tipo or es_funcion_void:
-            self.cerrarContextoFuncion()
-            
-        # Si salimos de un bloque normal (if, while), cerramos su propio contexto
-        else:
-            self.write_log("EXIT BLOQUE (Destruyendo Scope Local)", indentar=True)
-            self.tabla.del_Contexto()
+        self.tabla.del_Contexto()
 
-    def exitFuncionVoid(self, ctx):
-        self.cerrarContextoFuncion()
+    # Estructuras de control (IF, WHILE, FOR)
+    def enterIif(self, ctx: compiladoresParser.IifContext):
+        print(f"{C_CIAN}\t\tENTER IF{C_RESET}")
+    def exitIif(self, ctx: compiladoresParser.IifContext):
+        print(f"{C_CIAN}\t\tEXIT IF{C_RESET}")
+
+    def enterIwhile(self, ctx: compiladoresParser.IwhileContext):
+        print(f"{C_CIAN}\t\tENTER WHILE{C_RESET}")
+    def exitIwhile(self, ctx: compiladoresParser.IwhileContext):
+        print(f"{C_CIAN}\t\tEXIT WHILE{C_RESET}")
+
+    def enterIfor(self, ctx: compiladoresParser.IforContext):
+        print(f"{C_CIAN}\t\tENTER FOR{C_RESET}")
+    def exitIfor(self, ctx: compiladoresParser.IforContext):
+        print(f"{C_CIAN}\t\tEXIT FOR{C_RESET}")
 
     # =========================================================================
-    #  ASIGNACIONES Y LLAMADAS A FUNCIONES (Validación Semántica)
+    #  ASIGNACIONES Y LLAMADAS
     # =========================================================================
+    def exitAsignacion(self, ctx: compiladoresParser.AsignacionContext):
+        nombre_var = ctx.ID().getText()
+        linea = ctx.start.line 
+        self.auditarAsignacion(nombre_var, ctx.exp(), linea)
 
-    def exitAsignacion(self, ctx):
-        operacion = ctx.getChild(0).getText()
-        linea = ctx.start.line  
+    def auditarAsignacion(self, nombre_var, ctx_exp, linea):
+        var = self.tabla.buscar_local(nombre_var) or self.tabla.buscar_global(nombre_var)
+        if var is None:
+            print(f"{C_ROJO}Línea {linea}: ERROR SEMANTICO: Variable '{nombre_var}' no declarada.{C_RESET}")
+            self.error = True
+            return
+            
+        var.set_inicializado()
+        exp_texto = ctx_exp.getText()
         
-        if '=' in operacion:
-            nombreVariableIzquierda = operacion.split('=')[0].strip()
-            expresionDerecha = operacion.split('=')[1].strip()
+        # Auditar uso de variables en el lado derecho (la expresión)
+        self.auditarExpresion(ctx_exp, linea)
+        
+        # Verificación de tipos básica
+        if var.tipoDato in ['float', 'double'] and exp_texto.isdigit():
+            print(f"{C_AMARILLO}Línea {linea}: Advertencia: No se puede asignar un valor de tipo 'int' a una variable de tipo '{var.tipoDato}'.{C_RESET}")
             
-            # Buscar variable izquierda
-            varIzquierda = self.tabla.buscar_local(nombreVariableIzquierda) or self.tabla.buscar_global(nombreVariableIzquierda)
+        print(f"{C_VERDE}Línea {linea}: Asignación válida: '{nombre_var}' = '{exp_texto}'.{C_RESET}")
 
-            if varIzquierda is None:
-                print(f"\033[1;31mLínea {linea}: ERROR SEMANTICO: Variable '{nombreVariableIzquierda}' no declarada.\033[0m")
-                self.error = True
-                return
-            
-            tipoIzquierda = varIzquierda.tipoDato
-
-            # Validación básica de la derecha
-            terminos = re.split(r'(\+|-|\*|/)', expresionDerecha)
-            
-            for termino in terminos:
-                termino = termino.strip()
-                if termino in {'+', '-', '*', '/'} or re.match(r'^\d+(\.\d+)?$', termino):
-                    continue
-                
-                # Si es Variable o Función
-                if termino.isidentifier() or (re.search(r'[()]', termino)):
-                    if '(' in termino: termino = re.sub(r'\(.*?\)', '', termino) 
-                    
-                    varDerecha = self.tabla.buscar_local(termino) or self.tabla.buscar_global(termino)
-
-                    if varDerecha is None:
-                        print(f"\033[1;31mLínea {linea}: ERROR SEMANTICO: Variable '{termino}' no declarada.\033[0m")
-                        self.error = True
-                        return
-                    
-                    varDerecha.set_usado()
-                    
-                    # Advertencia de inicialización
-                    if not varDerecha.inicializado:
-                         print(f"\033[1;33mLínea {linea}: ADVERTENCIA: Variable '{termino}' usada sin inicializar.\033[0m")
-
-                    # Validación de tipos
-                    if tipoIzquierda != varDerecha.tipoDato:
-                        print(f"\033[1;33mLínea {linea}: Advertencia: No se puede asignar un valor de tipo '{varDerecha.tipoDato}' a una variable de tipo '{tipoIzquierda}'.\033[0m")
-                        return
-
-            # Si todo sale bien, marcamos la izquierda como inicializada
-            varIzquierda.set_inicializado()
-            print(f"\033[1;32mLínea {linea}: Asignación válida: '{nombreVariableIzquierda}' = '{expresionDerecha}'.\033[0m")   
-
-    def exitFuncionVar(self, ctx):
-        nombreFuncion = ctx.getChild(0).getText().split('(')[0].strip()
-        args = ctx.getChild(2).getText().split(',')
-        args = [arg for arg in args if arg.strip()] # Filtro vacíos
-
+    def exitFuncionVar(self, ctx: compiladoresParser.FuncionVarContext):
+        nombreFuncion = ctx.ID().getText()
         linea = ctx.start.line
         busquedaGlobal = self.tabla.buscar_global(nombreFuncion)
 
-        # 1. Existe función?
         if busquedaGlobal is None:
-            print(f"\033[1;31mLínea {linea}: ERROR SEMANTICO: La función '{nombreFuncion}' no fue declarada.\033[0m")
+            print(f"{C_ROJO}Línea {linea}: ERROR SEMANTICO: La función '{nombreFuncion}' no declarada.{C_RESET}")
             self.error = True
             return
 
-        # 2. Cantidad argumentos
+        args_pasados = ctx.ids().getText().split(',') if ctx.ids() and ctx.ids().getText() else []
+        args_pasados = [a for a in args_pasados if a]
+        
         definicion_args = getattr(busquedaGlobal, 'args', [])
-        if len(args) != len(definicion_args):
-            print(f"\033[1;31mLínea {linea}: ERROR SEMANTICO: Cantidad argumentos incorrecta. Esperados {len(definicion_args)}, recibidos {len(args)}.\033[0m")
+        if len(args_pasados) != len(definicion_args):
+            print(f"{C_ROJO}Línea {linea}: ERROR SEMANTICO: '{nombreFuncion}' espera {len(definicion_args)} argumentos, recibio {len(args_pasados)}.{C_RESET}")
             self.error = True
-            return
-
-        # 3. Tipos argumentos
-        for i, nombreArgCall in enumerate(args):
-            varCall = self.tabla.buscar_local(nombreArgCall) or self.tabla.buscar_global(nombreArgCall)
-            
-            if varCall is None:
-                if not (nombreArgCall.isdigit() or '.' in nombreArgCall):
-                      print(f"\033[1;31mLínea {linea}: ERROR SEMANTICO: Argumento '{nombreArgCall}' no declarado.\033[0m")
-                continue
-            
-            tipoEsperado = definicion_args[i]
-            tipoRecibido = varCall.tipoDato
-            
-            if tipoEsperado != tipoRecibido:
-                print(f"\033[1;31mLínea {linea}: ERROR SEMANTICO: Tipo incorrecto en arg {i+1}. Esperado '{tipoEsperado}', recibido '{tipoRecibido}'.\033[0m")
 
     # =========================================================================
-    #  ESTRUCTURAS DE CONTROL (Prints de seguimiento)
+    #  MÉTODOS AUXILIARES
     # =========================================================================
-    def enterIwhile(self, ctx): print("\t\tENTER WHILE")
-    def exitIwhile(self, ctx):  print("\t\tEXIT WHILE")
-    def enterIfor(self, ctx):   print("\t\tENTER FOR")
-    def exitIfor(self, ctx):    print("\t\tEXIT FOR")
-    def enterIif(self, ctx):    print("\t\tENTER IF")
-    def exitIif(self, ctx):     print("\t\tEXIT IF")
+    def guardarVariable(self, tipo, nombre, inicializado=False):
+        var = Variable(nombre, tipo)
+        if inicializado: var.set_inicializado()
+        
+        if self.tabla.buscar_local(nombre) is None:
+            self.tabla.add_identificador(var)
+        else:
+            print(f"{C_ROJO}Línea 0: ERROR SEMANTICO: Variable '{nombre}' ya declarada localmente.{C_RESET}")
+            self.error = True
 
-    # =========================================================================
-    #  MÉTODOS AUXILIARES Y HERRAMIENTAS
-    # =========================================================================
-    def procesarFuncion(self, nombre, tipo, ctx_donde_estan_args, es_prototipo=False):
+    def procesarFuncion(self, nombre, tipo, ctx_args):
         if '(' in nombre: nombre = nombre.split('(')[0]
 
         funcion = Funcion(nombre, tipo)
         funcion.args = []
 
-        texto = ctx_donde_estan_args.getText()
-        if '(' in texto and ')' in texto:
-            contenido = texto.split('(')[1].split(')')[0]
-            if contenido.strip():
-                tokens = contenido.split(',')
-                for t in tokens:
-                    if 'int' in t: funcion.args.append('int')
-                    elif 'float' in t: funcion.args.append('float')
-                    elif 'bool' in t: funcion.args.append('bool')
-                    elif 'double' in t: funcion.args.append('double')
+        argumentos_ctx = ctx_args.argumentos()
+        if argumentos_ctx is not None:
+            for arg_ctx in argumentos_ctx.argumento():
+                tipo_arg = arg_ctx.tipoDatos().getText()
+                funcion.args.append(tipo_arg)
         
         funcion.set_inicializado()
-        # LÓGICA DE PROTOTIPOS
-        busqueda = self.tabla.buscar_local(nombre)
-        
-        if busqueda is None:
-            # No existía, la agregamos (puede ser el prototipo o la función directa)
+        if self.tabla.buscar_local(nombre) is None:
             self.tabla.add_identificador(funcion)
-        else:
-            # Ya existía. Si estamos entrando al BLOQUE (no es prototipo),
-            # asumimos que lo que estaba en la tabla era el prototipo. Es válido.
-            if es_prototipo:
-                print(f"\033[1;33mAdvertencia: Prototipo '{nombre}' re-declarado.\033[0m")
+
+    def inyectarArgumentos(self, ctx_args):
+        argumentos_ctx = ctx_args.argumentos()
+        if argumentos_ctx is not None:
+            for arg_ctx in argumentos_ctx.argumento():
+                tipo_arg = arg_ctx.tipoDatos().getText()
+                nombre_arg = arg_ctx.ID().getText()
+                var = Variable(nombre_arg, tipo_arg)
+                var.set_inicializado() 
+                self.tabla.add_identificador(var)
+
+    def auditarExpresion(self, ctx_exp, linea):
+        tokens = re.findall(r'[a-zA-Z_]\w*', ctx_exp.getText())
+        palabras_reservadas = {'TRUE', 'FALSE'}
         
-        # Solo abrimos contexto (scope) si NO es un prototipo
-        if not es_prototipo:
-            self.write_log(f"ENTER FUNCION {nombre}", indentar=True)
-            self.tabla.add_contexto("FUNCION")
+        for token in tokens:
+            if token in palabras_reservadas: continue
+            var = self.tabla.buscar_local(token) or self.tabla.buscar_global(token)
+            if var:
+                var.set_usado()
+                if not var.inicializado and not hasattr(var, 'args'):
+                    print(f"{C_AMARILLO}Línea {linea}: ADVERTENCIA: Variable '{token}' usada sin inicializar.{C_RESET}")
+            else:
+                print(f"{C_ROJO}Línea {linea}: ERROR SEMANTICO: Variable '{token}' no declarada.{C_RESET}")
+                self.error = True
 
-    def guardarVariable(self, tipo, nombre):
-        var = Variable(nombre, tipo)
-        var.set_inicializado(False)
-        self.tabla.add_identificador(var)
-        self.write_log(f"Declarada variable global: {tipo} {nombre}")
-
-    def cerrarContextoFuncion(self):
-        self.write_log("EXIT FUNCION", indentar=True)
-        if len(self.tabla.contextos) > 2:
-            self.tabla.del_Contexto()
-
-    def visitTerminal(self, node: TerminalNode):
-        self.numTokens += 1
-        
     def visitErrorNode(self, node: ErrorNode):
-        print(f"\033[1;31m ERROR SINTACTICO: {node.getText()} \033[0m")
+        print(f"{C_ROJO}ERROR SINTACTICO: {node.getText()}{C_RESET}")
         self.error = True
-        
-    def enterEveryRule(self, ctx):
-        self.numNodos += 1

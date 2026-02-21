@@ -1,6 +1,87 @@
-int z=1;
-while(x<0){
-    y=5;
-}else
-    while(x<10)
-        y=+1;
+int f(int y);
+
+int xy(bool argA, int argB);
+
+
+
+double q = 4.5;
+
+
+
+int main() {
+
+    int x = 1, i = 1;
+
+    int y, j, z=0;
+
+    int a = 0;
+
+    bool c = TRUE;
+
+    double d = 0.3;
+
+
+
+    while ((x < 0) && (z > 0))
+
+        y = 0;
+
+
+
+    if (i == 1) {
+
+        while (x < 10) {
+
+            y = 1;
+
+        }
+
+    } else {
+
+        d = 2 + d;
+
+    }
+
+
+
+    z = d + a + y;
+
+    y = 2 + xy(c, a) + z / y + d;
+
+    z = 3;
+
+    bool e = c;
+
+    d = 2.25;
+
+    c = TRUE && FALSE;
+
+    e = FALSE || TRUE || TRUE;
+
+
+
+    return 0;
+
+}
+
+
+
+int xy(bool argA, int argB) {
+
+    int m, k;
+
+    bool p;
+
+    p=argA;
+
+    k=argB;
+
+    if (p)
+
+        return (k + 1);
+
+    else
+
+        return (k + 2);
+
+}
