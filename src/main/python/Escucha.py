@@ -15,6 +15,7 @@ class Escucha(compiladoresListener):
     def __init__(self):
         self.tabla = TablaSimbolos.get_instancia()
         self.error = False
+        self.tipos_nodos = {} # <-- NUEVO: Diccionario para Síntesis de Tipos Bottom-Up
 
     # =========================================================================
     #  INICIO Y FIN DEL PROGRAMA
@@ -26,7 +27,6 @@ class Escucha(compiladoresListener):
 
     def exitPrograma(self, ctx: compiladoresParser.ProgramaContext):
         print(f"\n{C_CIAN}\t\tFin de la compilacion{C_RESET}\n")
-        # mostrarVarsSinUsar() ya imprime su propio título
         self.tabla.mostrarVarsSinUsar()
         self.tabla.del_Contexto()
 
@@ -93,29 +93,56 @@ class Escucha(compiladoresListener):
     def exitBloque(self, ctx: compiladoresParser.BloqueContext):
         self.tabla.del_Contexto()
 
-    # Estructuras de control (IF, WHILE, FOR)
-    def enterIif(self, ctx: compiladoresParser.IifContext):
-        print(f"{C_CIAN}\t\tENTER IF{C_RESET}")
-    def exitIif(self, ctx: compiladoresParser.IifContext):
-        print(f"{C_CIAN}\t\tEXIT IF{C_RESET}")
-
-    def enterIwhile(self, ctx: compiladoresParser.IwhileContext):
-        print(f"{C_CIAN}\t\tENTER WHILE{C_RESET}")
-    def exitIwhile(self, ctx: compiladoresParser.IwhileContext):
-        print(f"{C_CIAN}\t\tEXIT WHILE{C_RESET}")
-
-    def enterIfor(self, ctx: compiladoresParser.IforContext):
-        print(f"{C_CIAN}\t\tENTER FOR{C_RESET}")
-    def exitIfor(self, ctx: compiladoresParser.IforContext):
-        print(f"{C_CIAN}\t\tEXIT FOR{C_RESET}")
+    def enterIif(self, ctx: compiladoresParser.IifContext): print(f"{C_CIAN}\t\tENTER IF{C_RESET}")
+    def exitIif(self, ctx: compiladoresParser.IifContext): print(f"{C_CIAN}\t\tEXIT IF{C_RESET}")
+    def enterIwhile(self, ctx: compiladoresParser.IwhileContext): print(f"{C_CIAN}\t\tENTER WHILE{C_RESET}")
+    def exitIwhile(self, ctx: compiladoresParser.IwhileContext): print(f"{C_CIAN}\t\tEXIT WHILE{C_RESET}")
+    def enterIfor(self, ctx: compiladoresParser.IforContext): print(f"{C_CIAN}\t\tENTER FOR{C_RESET}")
+    def exitIfor(self, ctx: compiladoresParser.IforContext): print(f"{C_CIAN}\t\tEXIT FOR{C_RESET}")
 
     # =========================================================================
-    #  ASIGNACIONES Y LLAMADAS
+    #  SÍNTESIS DE TIPOS (BOTTOM-UP) - ¡NUEVA MEJORA DE ARQUITECTURA!
+    # =========================================================================
+    def exitFactor(self, ctx: compiladoresParser.FactorContext):
+        if ctx.TRUE() or ctx.FALSE():
+            self.tipos_nodos[ctx] = 'bool'
+        elif ctx.funcionVar():
+            self.tipos_nodos[ctx] = self.tipos_nodos.get(ctx.funcionVar(), 'desconocido')
+        elif ctx.PA():
+            self.tipos_nodos[ctx] = self.tipos_nodos.get(ctx.exp(), 'desconocido')
+        else:
+            texto = ctx.getText()
+            if texto.isdigit():
+                self.tipos_nodos[ctx] = 'int'
+            elif re.match(r'^\d+\.\d+$', texto):
+                self.tipos_nodos[ctx] = 'float'
+            else:
+                var = self.tabla.buscar_local(texto) or self.tabla.buscar_global(texto)
+                self.tipos_nodos[ctx] = var.tipoDato if var else 'desconocido'
+
+    def exitExp(self, ctx: compiladoresParser.ExpContext):
+        if ctx.getChildCount() == 1:
+            self.tipos_nodos[ctx] = self.tipos_nodos.get(ctx.factor(), 'desconocido')
+        elif ctx.getChildCount() == 3:
+            tipo_izq = self.tipos_nodos.get(ctx.getChild(0), 'desconocido')
+            tipo_der = self.tipos_nodos.get(ctx.getChild(2), 'desconocido')
+            operador = ctx.getChild(1).getText()
+            
+            if operador in ['>', '<', '>=', '<=', '==', '!=', '&&', '||']:
+                self.tipos_nodos[ctx] = 'bool'
+            else:
+                # Regla de Promoción Matemática
+                if tipo_izq in ['float', 'double'] or tipo_der in ['float', 'double']:
+                    self.tipos_nodos[ctx] = 'float'
+                else:
+                    self.tipos_nodos[ctx] = 'int'
+
+    # =========================================================================
+    #  ASIGNACIONES Y LLAMADAS (AHORA SÚPER ESTRICTAS)
     # =========================================================================
     def exitAsignacion(self, ctx: compiladoresParser.AsignacionContext):
         nombre_var = ctx.ID().getText()
-        linea = ctx.start.line 
-        self.auditarAsignacion(nombre_var, ctx.exp(), linea)
+        self.auditarAsignacion(nombre_var, ctx.exp(), ctx.start.line)
 
     def auditarAsignacion(self, nombre_var, ctx_exp, linea):
         var = self.tabla.buscar_local(nombre_var) or self.tabla.buscar_global(nombre_var)
@@ -125,16 +152,19 @@ class Escucha(compiladoresListener):
             return
             
         var.set_inicializado()
-        exp_texto = ctx_exp.getText()
-        
-        # Auditar uso de variables en el lado derecho (la expresión)
         self.auditarExpresion(ctx_exp, linea)
         
-        # Verificación de tipos básica
-        if var.tipoDato in ['float', 'double'] and exp_texto.isdigit():
-            print(f"{C_AMARILLO}Línea {linea}: Advertencia: No se puede asignar un valor de tipo 'int' a una variable de tipo '{var.tipoDato}'.{C_RESET}")
+        # Validación de tipos estricta gracias a la síntesis Bottom-Up
+        tipo_expresion = self.tipos_nodos.get(ctx_exp, 'desconocido')
+        
+        if tipo_expresion != 'desconocido' and var.tipoDato != tipo_expresion:
+            # Tolerancia de C: Permite asignar int a float, pero advierte de float a int
+            if var.tipoDato in ['float', 'double'] and tipo_expresion == 'int':
+                pass # Conversión implícita segura
+            else:
+                print(f"{C_AMARILLO}Línea {linea}: ADVERTENCIA DE TIPO: Asignando '{tipo_expresion}' a variable '{nombre_var}' de tipo '{var.tipoDato}'.{C_RESET}")
             
-        print(f"{C_VERDE}Línea {linea}: Asignación válida: '{nombre_var}' = '{exp_texto}'.{C_RESET}")
+        print(f"{C_VERDE}Línea {linea}: Asignación válida: '{nombre_var}' = '{ctx_exp.getText()}'.{C_RESET}")
 
     def exitFuncionVar(self, ctx: compiladoresParser.FuncionVarContext):
         nombreFuncion = ctx.ID().getText()
@@ -146,13 +176,26 @@ class Escucha(compiladoresListener):
             self.error = True
             return
 
-        args_pasados = ctx.ids().getText().split(',') if ctx.ids() and ctx.ids().getText() else []
-        args_pasados = [a for a in args_pasados if a]
-        
+        # Anotamos el tipo de retorno de esta función para el diccionario
+        self.tipos_nodos[ctx] = busquedaGlobal.tipoDato
+
+        # Extraemos los nodos 'exp' reales del árbol (no texto plano)
+        exps_pasadas = ctx.ids().exp() if ctx.ids() else []
         definicion_args = getattr(busquedaGlobal, 'args', [])
-        if len(args_pasados) != len(definicion_args):
-            print(f"{C_ROJO}Línea {linea}: ERROR SEMANTICO: '{nombreFuncion}' espera {len(definicion_args)} argumentos, recibio {len(args_pasados)}.{C_RESET}")
+        
+        # 1. Validación de Aridad
+        if len(exps_pasadas) != len(definicion_args):
+            print(f"{C_ROJO}Línea {linea}: ERROR SEMANTICO: '{nombreFuncion}' espera {len(definicion_args)} argumentos, recibio {len(exps_pasadas)}.{C_RESET}")
             self.error = True
+            return
+
+        # 2. Validación de Tipos Estricta (El ZIP en acción)
+        for i, (exp_ctx, tipo_esperado) in enumerate(zip(exps_pasadas, definicion_args)):
+            tipo_enviado = self.tipos_nodos.get(exp_ctx, 'desconocido')
+            
+            if tipo_enviado != 'desconocido' and tipo_enviado != tipo_esperado:
+                print(f"{C_ROJO}Línea {linea}: ERROR SEMANTICO: Argumento {i+1} de '{nombreFuncion}' esperaba '{tipo_esperado}', pero recibió '{tipo_enviado}'.{C_RESET}")
+                self.error = True
 
     # =========================================================================
     #  MÉTODOS AUXILIARES
@@ -160,7 +203,6 @@ class Escucha(compiladoresListener):
     def guardarVariable(self, tipo, nombre, inicializado=False):
         var = Variable(nombre, tipo)
         if inicializado: var.set_inicializado()
-        
         if self.tabla.buscar_local(nombre) is None:
             self.tabla.add_identificador(var)
         else:
@@ -169,36 +211,26 @@ class Escucha(compiladoresListener):
 
     def procesarFuncion(self, nombre, tipo, ctx_args):
         if '(' in nombre: nombre = nombre.split('(')[0]
-
         funcion = Funcion(nombre, tipo)
         funcion.args = []
-
-        argumentos_ctx = ctx_args.argumentos()
-        if argumentos_ctx is not None:
-            for arg_ctx in argumentos_ctx.argumento():
-                tipo_arg = arg_ctx.tipoDatos().getText()
-                funcion.args.append(tipo_arg)
-        
+        if ctx_args.argumentos():
+            for arg_ctx in ctx_args.argumentos().argumento():
+                funcion.args.append(arg_ctx.tipoDatos().getText())
         funcion.set_inicializado()
         if self.tabla.buscar_local(nombre) is None:
             self.tabla.add_identificador(funcion)
 
     def inyectarArgumentos(self, ctx_args):
-        argumentos_ctx = ctx_args.argumentos()
-        if argumentos_ctx is not None:
-            for arg_ctx in argumentos_ctx.argumento():
-                tipo_arg = arg_ctx.tipoDatos().getText()
-                nombre_arg = arg_ctx.ID().getText()
-                var = Variable(nombre_arg, tipo_arg)
+        if ctx_args.argumentos():
+            for arg_ctx in ctx_args.argumentos().argumento():
+                var = Variable(arg_ctx.ID().getText(), arg_ctx.tipoDatos().getText())
                 var.set_inicializado() 
                 self.tabla.add_identificador(var)
 
     def auditarExpresion(self, ctx_exp, linea):
         tokens = re.findall(r'[a-zA-Z_]\w*', ctx_exp.getText())
-        palabras_reservadas = {'TRUE', 'FALSE'}
-        
         for token in tokens:
-            if token in palabras_reservadas: continue
+            if token in {'TRUE', 'FALSE'}: continue
             var = self.tabla.buscar_local(token) or self.tabla.buscar_global(token)
             if var:
                 var.set_usado()
