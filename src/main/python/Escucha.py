@@ -101,7 +101,7 @@ class Escucha(compiladoresListener):
     def exitIfor(self, ctx: compiladoresParser.IforContext): print(f"{C_CIAN}\t\tEXIT FOR{C_RESET}")
 
     # =========================================================================
-    #  SÍNTESIS DE TIPOS (BOTTOM-UP) - ¡NUEVA MEJORA DE ARQUITECTURA!
+    #  SÍNTESIS DE TIPOS (BOTTOM-UP)
     # =========================================================================
     def exitFactor(self, ctx: compiladoresParser.FactorContext):
         if ctx.TRUE() or ctx.FALSE():
@@ -138,7 +138,7 @@ class Escucha(compiladoresListener):
                     self.tipos_nodos[ctx] = 'int'
 
     # =========================================================================
-    #  ASIGNACIONES Y LLAMADAS (AHORA SÚPER ESTRICTAS)
+    #  ASIGNACIONES Y LLAMADAS
     # =========================================================================
     def exitAsignacion(self, ctx: compiladoresParser.AsignacionContext):
         nombre_var = ctx.ID().getText()
